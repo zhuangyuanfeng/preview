@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手写 Promise.all + instanceof</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 28px; margin-bottom: 8px; }
+  h2 { color: #7dd3fc; font-size: 20px; margin: 32px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .card p {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #cbd5e1;
+  }
+
+  /* Quiz */
+  .quiz {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .quiz-question {
+    font-weight: 600;
+    color: #fbbf24;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+  .quiz-question::before {
+    content: '?  ';
+    font-size: 16px;
+  }
+  .quiz-btn {
+    background: #38bdf8;
+    color: #0f172a;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background .2s;
+  }
+  .quiz-btn:hover { background: #7dd3fc; }
+  .quiz-answer {
+    display: none;
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: #0f4c3a;
+    border-radius: 8px;
+    border-left: 3px solid #34d399;
+    font-size: 14px;
+    color: #a7f3d0;
+    line-height: 1.8;
+  }
+  .quiz-answer.show { display: block; }
+
+  /* Collapsible */
+  details {
+    background: #1e293b;
+    border-radius: 12px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+    overflow: hidden;
+  }
+  summary {
+    padding: 16px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    color: #7dd3fc;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: '\25B6';
+    font-size: 12px;
+    transition: transform .2s;
+    color: #38bdf8;
+  }
+  details[open] > summary::before { transform: rotate(90deg); }
+  details > .detail-body {
+    padding: 0 20px 20px;
+  }
+
+  /* Code */
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  }
+  /* Syntax highlighting */
+  .kw { color: #c084fc; }
+  .fn { color: #38bdf8; }
+  .st { color: #34d399; }
+  .cm { color: #64748b; }
+  .op { color: #fbbf24; }
+  .nb { color: #f472b6; }
+  .nu { color: #fb923c; }
+
+  .note {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Interview card */
+  .interview-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f2027 100%);
+    border: 1px solid #38bdf8;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .interview-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle at top right, rgba(56,189,248,.15), transparent);
+  }
+  .interview-card h3 {
+    color: #38bdf8;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+  .interview-card p {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #cbd5e1;
+  }
+
+  /* Practice */
+  .practice {
+    background: #1a2332;
+    border: 1px dashed #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .practice h3 {
+    color: #fbbf24;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .practice p, .practice li {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.8;
+  }
+  .practice ul { padding-left: 20px; margin-top: 8px; }
+
+  /* Nav */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+  }
+  .nav a {
+    color: #38bdf8;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 16px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    transition: all .2s;
+  }
+  .nav a:hover {
+    background: #1e293b;
+    border-color: #38bdf8;
+  }
+</style>
+</head>
+<body>
+
+<!-- Title -->
+<h1>手写 Promise.all + instanceof</h1>
+<p class="subtitle">JavaScript 深度 &middot; 手写高频题</p>
+
+<!-- ==================== Part 1: Promise.all ==================== -->
+<h2>Part 1: Promise.all</h2>
+
+<div class="card">
+  <p>
+    <strong>核心概念：</strong>接收一个 Promise 数组，全部 resolve 才 resolve（结果数组顺序和输入一致），任一 reject 就 reject。
+  </p>
+</div>
+
+<!-- 实现 -->
+<details>
+  <summary>查看实现代码</summary>
+  <div class="detail-body">
+    <pre><code><span class="kw">function</span> <span class="fn">promiseAll</span>(promises) {
+  <span class="kw">return new</span> <span class="nb">Promise</span>((resolve, reject) =&gt; {
+    <span class="kw">const</span> results = []
+    <span class="kw">let</span> count = <span class="nu">0</span>
+    promises.<span class="fn">forEach</span>((p, i) =&gt; {
+      <span class="nb">Promise</span>.<span class="fn">resolve</span>(p).<span class="fn">then</span>(val =&gt; {
+        results[i] = val  <span class="cm">// 用 i 保证顺序</span>
+        count++
+        <span class="kw">if</span> (count === promises.length) <span class="fn">resolve</span>(results)
+      }).<span class="fn">catch</span>(reject)
+    })
+  })
+}</code></pre>
+  </div>
+</details>
+
+<!-- Quiz 1 -->
+<div class="quiz">
+  <p class="quiz-question">为什么用 results[i] = val 而不是 results.push(val)？</p>
+  <button class="quiz-btn" onclick="toggleAnswer(this)">查看答案</button>
+  <div class="quiz-answer">
+    <strong>push 不保证顺序。</strong>因为 Promise 是异步的，完成顺序不确定。比如第 3 个 Promise 可能最先 resolve，用 push 的话它就排到第一个了。用索引 <code>i</code> 才能保证结果顺序和输入一致。
+  </div>
+</div>
+
+<!-- Quiz 2 -->
+<div class="quiz">
+  <p class="quiz-question">为什么用 count 而不是 results.length 判断完成？</p>
+  <button class="quiz-btn" onclick="toggleAnswer(this)">查看答案</button>
+  <div class="quiz-answer">
+    <strong>results[i] = val 是稀疏赋值。</strong>如果最后一个 Promise 先完成，比如 <code>results[4] = val</code>，此时 <code>results.length</code> 就等于 5，但前面 0~3 还是空位。<code>count</code> 才是真正完成的数量。
+  </div>
+</div>
+
+<!-- Quiz 3 -->
+<div class="quiz">
+  <p class="quiz-question">为什么要 Promise.resolve(p) 包一层？</p>
+  <button class="quiz-btn" onclick="toggleAnswer(this)">查看答案</button>
+  <div class="quiz-answer">
+    <strong>输入数组可能包含非 Promise 值。</strong>比如 <code>[1, 2, fetch('/api')]</code> 里面有普通数字，<code>Promise.resolve</code> 确保统一处理&mdash;&mdash;非 Promise 值会被自动包装成已 resolve 的 Promise。
+  </div>
+</div>
+
+<!-- ==================== Part 2: instanceof ==================== -->
+<h2>Part 2: instanceof</h2>
+
+<div class="card">
+  <p>
+    <strong>核心概念：</strong>判断对象的原型链上是否有构造函数的 <code>prototype</code>。<br>
+    <code>a instanceof B</code> 就是看 <code>a.__proto__.__proto__...</code> 能不能找到 <code>B.prototype</code>。
+  </p>
+</div>
+
+<!-- 实现 -->
+<details>
+  <summary>查看实现代码</summary>
+  <div class="detail-body">
+    <pre><code><span class="kw">function</span> <span class="fn">myInstanceof</span>(obj, constructor) {
+  <span class="kw">if</span> (obj === <span class="nb">null</span> || <span class="kw">typeof</span> obj !== <span class="st">'object'</span>) <span class="kw">return false</span>
+  <span class="kw">let</span> proto = <span class="nb">Object</span>.<span class="fn">getPrototypeOf</span>(obj)
+  <span class="kw">while</span> (proto !== <span class="nb">null</span>) {
+    <span class="kw">if</span> (proto === constructor.prototype) <span class="kw">return true</span>
+    proto = <span class="nb">Object</span>.<span class="fn">getPrototypeOf</span>(proto)
+  }
+  <span class="kw">return false</span>
+}</code></pre>
+
+    <div class="note">
+      <strong>关键思路：</strong>沿着 <code>obj</code> 的原型链一直往上找，每一层和 <code>constructor.prototype</code> 比较。找到就返回 <code>true</code>，到顶（null）还没找到就返回 <code>false</code>。
+    </div>
+  </div>
+</details>
+
+<!-- Quiz -->
+<div class="quiz">
+  <p class="quiz-question">为什么用 Object.getPrototypeOf 而不是 __proto__？</p>
+  <button class="quiz-btn" onclick="toggleAnswer(this)">查看答案</button>
+  <div class="quiz-answer">
+    <strong><code>__proto__</code> 是非标准属性</strong>（虽然浏览器都支持），<code>Object.getPrototypeOf</code> 是 ES5 标准方法。面试中用标准方法更专业，也更符合规范。
+  </div>
+</div>
+
+<!-- ==================== 面试话术 ==================== -->
+<h2>面试话术</h2>
+
+<div class="interview-card">
+  <h3>当面试官问「手写 Promise.all」</h3>
+  <p>
+    "Promise.all 接收一个 Promise 数组，返回一个新 Promise。<br><br>
+    核心实现就三点：<br>
+    <strong>1.</strong> 用 <code>Promise.resolve(p)</code> 包一层，兼容非 Promise 值；<br>
+    <strong>2.</strong> 用索引赋值 <code>results[i]</code> 而不是 push，保证结果顺序和输入一致；<br>
+    <strong>3.</strong> 用计数器 count 判断是否全部完成，不能用 results.length，因为稀疏数组的 length 不准。<br><br>
+    任一 reject 直接 reject 整个 Promise。"
+  </p>
+</div>
+
+<div class="interview-card">
+  <h3>当面试官问「手写 instanceof」</h3>
+  <p>
+    "instanceof 本质是沿着对象的原型链查找。<br><br>
+    实现就是一个 while 循环：用 <code>Object.getPrototypeOf</code> 不断获取上一级原型，每一层和构造函数的 prototype 比较。找到就返回 true，到 null 还没找到就返回 false。<br><br>
+    用 <code>Object.getPrototypeOf</code> 而不是 <code>__proto__</code>，因为前者是标准方法。"
+  </p>
+</div>
+
+<!-- ==================== 今晚练习 ==================== -->
+<div class="practice">
+  <h3>今晚练习</h3>
+  <p>不看代码，凭记忆手写：</p>
+  <ul>
+    <li><strong>Promise.all</strong> &mdash; 10 分钟，重点关注三个坑（顺序、count、Promise.resolve）</li>
+    <li><strong>instanceof</strong> &mdash; 5 分钟，while 循环 + Object.getPrototypeOf</li>
+    <li>写完后打开实现代码对比，查漏补缺</li>
+  </ul>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <a href="curry-pubsub.html">&larr; 柯里化/发布订阅</a>
+  <a href="#">接雨水 &rarr;</a>
+</div>
+
+<script>
+function toggleAnswer(btn) {
+  const answer = btn.nextElementSibling;
+  const showing = answer.classList.contains('show');
+  answer.classList.toggle('show');
+  btn.textContent = showing ? '查看答案' : '收起答案';
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手写深拷贝</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 28px; margin-bottom: 8px; }
+  h2 { color: #7dd3fc; font-size: 20px; margin: 32px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+
+  .diagram-wrap {
+    text-align: center;
+    margin: 24px 0;
+  }
+  .diagram-wrap img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid #334155;
+  }
+
+  /* Quiz */
+  .quiz {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .quiz-question {
+    font-weight: 600;
+    color: #fbbf24;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+  .quiz-question::before {
+    content: '?  ';
+    font-size: 16px;
+  }
+  .quiz-btn {
+    background: #38bdf8;
+    color: #0f172a;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background .2s;
+  }
+  .quiz-btn:hover { background: #7dd3fc; }
+  .quiz-answer {
+    display: none;
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: #0f4c3a;
+    border-radius: 8px;
+    border-left: 3px solid #34d399;
+    font-size: 14px;
+    color: #a7f3d0;
+    line-height: 1.8;
+  }
+  .quiz-answer.show { display: block; }
+
+  /* Collapsible */
+  details {
+    background: #1e293b;
+    border-radius: 12px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+    overflow: hidden;
+  }
+  summary {
+    padding: 16px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    color: #7dd3fc;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: '\25B6';
+    font-size: 12px;
+    transition: transform .2s;
+    color: #38bdf8;
+  }
+  details[open] > summary::before { transform: rotate(90deg); }
+  details > .detail-body {
+    padding: 0 20px 20px;
+  }
+
+  /* Code */
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  }
+  /* Syntax highlighting */
+  .kw { color: #c084fc; }  /* keyword */
+  .fn { color: #38bdf8; }  /* function name */
+  .st { color: #34d399; }  /* string */
+  .cm { color: #64748b; }  /* comment */
+  .op { color: #fbbf24; }  /* operator / special */
+  .nb { color: #f472b6; }  /* built-in */
+  .nu { color: #fb923c; }  /* number */
+
+  .note {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  .warn {
+    background: #422006;
+    border-left: 3px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #fde68a;
+  }
+
+  /* Interview card */
+  .interview-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f2027 100%);
+    border: 1px solid #38bdf8;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .interview-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle at top right, rgba(56,189,248,.15), transparent);
+  }
+  .interview-card h3 {
+    color: #38bdf8;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+  .interview-card p {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #cbd5e1;
+  }
+
+  /* Practice */
+  .practice {
+    background: #1a2332;
+    border: 1px dashed #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .practice h3 {
+    color: #fbbf24;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .practice p, .practice li {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.8;
+  }
+  .practice ul { padding-left: 20px; margin-top: 8px; }
+
+  /* Nav */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+  }
+  .nav a {
+    color: #38bdf8;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 16px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    transition: all .2s;
+  }
+  .nav a:hover {
+    background: #1e293b;
+    border-color: #38bdf8;
+  }
+
+  .step-tag {
+    display: inline-block;
+    background: #38bdf8;
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 4px;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Title -->
+<h1>手写深拷贝</h1>
+<p class="subtitle">第1周 &middot; JavaScript 深度 &middot; 周末动手写</p>
+
+<!-- Diagram -->
+<div class="diagram-wrap">
+  <img src="../assets/deep-copy.png" alt="深拷贝与浅拷贝示意图">
+</div>
+
+<!-- Quiz 1: 浅拷贝 vs 深拷贝 -->
+<h2>浅拷贝 vs 深拷贝</h2>
+<div class="quiz">
+  <p class="quiz-question">Object.assign 是深拷贝还是浅拷贝？</p>
+  <button class="quiz-btn" onclick="toggleAnswer(this)">查看答案</button>
+  <div class="quiz-answer">
+    <strong>浅拷贝。</strong>Object.assign 只复制第一层属性。如果属性值是对象，拷贝的是引用而不是值，修改嵌套对象仍会互相影响。
+  </div>
+</div>
+
+<!-- Quiz 2: JSON 方式的问题 -->
+<h2>JSON.parse(JSON.stringify()) 的问题</h2>
+<div class="quiz">
+  <p class="quiz-question">这种方式有什么缺陷？</p>
+  <button class="quiz-btn" onclick="toggleAnswer(this)">查看答案</button>
+  <div class="quiz-answer">
+    <strong>无法处理以下情况：</strong><br>
+    &bull; 函数 &mdash; 直接丢失<br>
+    &bull; undefined &mdash; 直接丢失<br>
+    &bull; Symbol &mdash; 直接丢失<br>
+    &bull; 循环引用 &mdash; 直接报错<br>
+    &bull; Date &mdash; 变成字符串<br>
+    &bull; RegExp &mdash; 变成空对象 <code>{}</code>
+    <pre style="margin-top:12px; background:#1a1a2e; padding:12px; border-radius:8px;"><code><span class="kw">const</span> obj = {
+  fn: () => {},
+  undef: <span class="kw">undefined</span>,
+  date: <span class="kw">new</span> <span class="fn">Date</span>(),
+  reg: <span class="str">/abc/</span>
+}
+JSON.<span class="fn">parse</span>(JSON.<span class="fn">stringify</span>(obj))
+<span class="cmt">// → { date: "2026-04-03T...", reg: {} }</span>
+<span class="cmt">// fn 和 undef 直接消失了！date 从 Date 对象变成了字符串！</span></code></pre>
+  </div>
+</div>
+
+<!-- Step 1: 基础版 -->
+<h2>渐进式实现</h2>
+
+<details>
+  <summary><span class="step-tag">Step 1</span> 基础版 &mdash; 递归克隆</summary>
+  <div class="detail-body">
+    <pre><code><span class="kw">function</span> <span class="fn">deepClone</span>(obj) {
+  <span class="kw">if</span> (obj === <span class="nb">null</span> || <span class="kw">typeof</span> obj !== <span class="st">'object'</span>) <span class="kw">return</span> obj
+
+  <span class="kw">const</span> clone = <span class="nb">Array</span>.<span class="fn">isArray</span>(obj) ? [] : {}
+
+  <span class="kw">for</span> (<span class="kw">const</span> key <span class="kw">in</span> obj) {
+    <span class="kw">if</span> (obj.<span class="fn">hasOwnProperty</span>(key)) {
+      clone[key] = <span class="fn">deepClone</span>(obj[key])
+    }
+  }
+
+  <span class="kw">return</span> clone
+}</code></pre>
+    <div class="warn">
+      <strong>问题：</strong>无法处理循环引用，会导致栈溢出（Maximum call stack size exceeded）。
+    </div>
+    <div class="card" style="margin-top:12px; background:#1a1a2e; border:1px solid #dc2626;">
+      <p style="color:#fca5a5; font-weight:600; margin-bottom:8px;">具体例子：</p>
+      <pre style="margin:0;"><code><span class="kw">const</span> obj = { name: <span class="str">"test"</span> }
+obj.self = obj  <span class="cmt">// obj.self 指向 obj 自身</span>
+
+<span class="fn">deepClone</span>(obj)
+<span class="cmt">// ❌ RangeError: Maximum call stack size exceeded</span></code></pre>
+      <p style="color:#94a3b8; font-size:13px; margin-top:10px;">
+        <strong style="color:#fca5a5;">调用链：</strong>deepClone(obj) → deepClone(obj.self) → deepClone(obj.self.self) → ...<br>
+        self 指向 obj 自身，递归永远不会停，直到栈溢出。Step 2 用 WeakMap 记录已拷贝的对象来解决。
+      </p>
+    </div>
+  </div>
+</details>
+
+<!-- Step 2: WeakMap -->
+<details>
+  <summary><span class="step-tag">Step 2</span> 加 WeakMap 处理循环引用</summary>
+  <div class="detail-body">
+    <pre><code><span class="kw">function</span> <span class="fn">deepClone</span>(obj, map = <span class="kw">new</span> <span class="nb">WeakMap</span>()) {
+  <span class="kw">if</span> (obj === <span class="nb">null</span> || <span class="kw">typeof</span> obj !== <span class="st">'object'</span>) <span class="kw">return</span> obj
+  <span class="kw">if</span> (map.<span class="fn">has</span>(obj)) <span class="kw">return</span> map.<span class="fn">get</span>(obj)
+
+  <span class="kw">const</span> clone = <span class="nb">Array</span>.<span class="fn">isArray</span>(obj) ? [] : {}
+  map.<span class="fn">set</span>(obj, clone)
+
+  <span class="kw">for</span> (<span class="kw">const</span> key <span class="kw">in</span> obj) {
+    <span class="kw">if</span> (obj.<span class="fn">hasOwnProperty</span>(key)) {
+      clone[key] = <span class="fn">deepClone</span>(obj[key], map)
+    }
+  }
+
+  <span class="kw">return</span> clone
+}</code></pre>
+
+    <div class="quiz" style="margin-top: 16px; border: 1px solid #334155;">
+      <p class="quiz-question">为什么用 WeakMap 而不是 Map？</p>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">查看答案</button>
+      <div class="quiz-answer">
+        <strong>WeakMap 的 key 是弱引用。</strong>拷贝完成后，如果原对象被垃圾回收，WeakMap 中对应的记录也会自动清理，不会造成内存泄漏。而 Map 的 key 是强引用，即使不再需要，原对象也不会被回收。
+      </div>
+    </div>
+  </div>
+</details>
+
+<!-- Step 3: 完整版 -->
+<details>
+  <summary><span class="step-tag">Step 3</span> 处理特殊类型（完整版）</summary>
+  <div class="detail-body">
+    <pre><code><span class="kw">function</span> <span class="fn">deepClone</span>(obj, map = <span class="kw">new</span> <span class="nb">WeakMap</span>()) {
+  <span class="kw">if</span> (obj === <span class="nb">null</span> || <span class="kw">typeof</span> obj !== <span class="st">'object'</span>) <span class="kw">return</span> obj
+  <span class="kw">if</span> (map.<span class="fn">has</span>(obj)) <span class="kw">return</span> map.<span class="fn">get</span>(obj)
+
+  <span class="cm">// 处理特殊对象类型</span>
+  <span class="kw">if</span> (obj <span class="kw">instanceof</span> <span class="nb">Date</span>) <span class="kw">return new</span> <span class="nb">Date</span>(obj)
+  <span class="kw">if</span> (obj <span class="kw">instanceof</span> <span class="nb">RegExp</span>) <span class="kw">return new</span> <span class="nb">RegExp</span>(obj)
+
+  <span class="kw">const</span> clone = <span class="nb">Array</span>.<span class="fn">isArray</span>(obj) ? [] : {}
+  map.<span class="fn">set</span>(obj, clone)
+
+  <span class="cm">// Reflect.ownKeys 可以遍历 Symbol 属性</span>
+  <span class="kw">for</span> (<span class="kw">const</span> key <span class="kw">of</span> <span class="nb">Reflect</span>.<span class="fn">ownKeys</span>(obj)) {
+    clone[key] = <span class="fn">deepClone</span>(obj[key], map)
+  }
+
+  <span class="kw">return</span> clone
+}</code></pre>
+
+    <div class="note">
+      <strong>Reflect.ownKeys(obj)</strong> 等价于 <code>Object.getOwnPropertyNames(obj).concat(Object.getOwnPropertySymbols(obj))</code>，可以遍历包括 Symbol 在内的所有自有属性。
+    </div>
+  </div>
+</details>
+
+<!-- 面试话术 -->
+<h2>面试话术</h2>
+<div class="interview-card">
+  <h3>当面试官问「手写一个深拷贝」</h3>
+  <p>
+    "深拷贝我会分三步来写。<br><br>
+    <strong>第一步</strong>，基础版：递归遍历对象，遇到原始类型直接返回，遇到引用类型就创建新对象递归复制。<br><br>
+    <strong>第二步</strong>，处理循环引用：用 WeakMap 记录已经拷贝过的对象，遇到重复的直接返回缓存。选 WeakMap 是因为它的 key 是弱引用，不会内存泄漏。<br><br>
+    <strong>第三步</strong>，处理特殊类型：Date 和 RegExp 需要用各自的构造函数重新创建。用 Reflect.ownKeys 代替 for...in 来遍历 Symbol 属性。<br><br>
+    实际项目中如果不需要处理特殊场景，通常用 <code>structuredClone</code>（浏览器原生 API）或者 lodash 的 <code>cloneDeep</code>。"
+  </p>
+</div>
+
+<!-- 练习 -->
+<div class="practice">
+  <h3>今晚练习</h3>
+  <p>手写第二步（WeakMap 版），目标 <strong>15 分钟内</strong>写完。</p>
+  <ul>
+    <li>不要看代码，凭记忆手写</li>
+    <li>自己写测试用例，至少覆盖：普通对象、嵌套对象、数组、循环引用</li>
+    <li>在浏览器控制台运行验证</li>
+    <li>写完后对比 Step 2，查漏补缺</li>
+  </ul>
+</div>
+
+<!-- Nav -->
+<div class="nav">
+  <a href="promise-handwrite.html">&larr; Promise手写</a>
+  <a href="debounce-throttle.html">防抖节流 &rarr;</a>
+</div>
+
+<script>
+function toggleAnswer(btn) {
+  const answer = btn.nextElementSibling;
+  const showing = answer.classList.contains('show');
+  answer.classList.toggle('show');
+  btn.textContent = showing ? '查看答案' : '收起答案';
+}
+</script>
+
+</body>
+</html>

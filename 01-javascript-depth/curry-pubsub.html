@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手写柯里化 + 发布订阅</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 28px; margin-bottom: 8px; }
+  h2 { color: #7dd3fc; font-size: 20px; margin: 32px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 16px; margin: 20px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+
+  /* Code blocks */
+  pre {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin: 12px 0;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  .code-inline {
+    background: #334155;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #7dd3fc;
+  }
+
+  /* Syntax highlighting */
+  .kw { color: #c084fc; }
+  .fn { color: #38bdf8; }
+  .str { color: #4ade80; }
+  .cm { color: #64748b; }
+  .op { color: #f472b6; }
+  .num { color: #fb923c; }
+  .pr { color: #fbbf24; }
+  .bi { color: #22d3ee; }
+
+  /* Collapsible / expandable */
+  details {
+    margin: 16px 0;
+  }
+  summary {
+    cursor: pointer;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #7dd3fc;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+  }
+  summary:hover { background: #253348; }
+  summary::before {
+    content: '\25B6';
+    font-size: 12px;
+    transition: transform 0.2s;
+    color: #38bdf8;
+  }
+  details[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  details[open] > summary {
+    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid #334155;
+  }
+  .step-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 20px;
+  }
+
+  /* Quiz */
+  .quiz {
+    background: #1a1a3e;
+    border: 1px solid #4338ca;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .quiz-question {
+    color: #a78bfa;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .quiz-question::before {
+    content: '?';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    background: #4338ca;
+    color: white;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .quiz-answer {
+    display: none;
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #a5f3fc;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+  .quiz-answer.show { display: block; }
+  .quiz-btn {
+    background: #4338ca;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .quiz-btn:hover { background: #5b4fe0; }
+
+  /* Key point / note */
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #bae6fd;
+  }
+
+  .note {
+    background: #1a2e1a;
+    border-left: 3px solid #4ade80;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #86efac;
+  }
+
+  /* Interview card */
+  .interview-card {
+    background: linear-gradient(135deg, #1e293b 0%, #1a1a3e 100%);
+    border: 1px solid #4338ca;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .interview-card h3 {
+    color: #a78bfa;
+    margin: 0 0 12px;
+    font-size: 15px;
+  }
+  .interview-card p, .interview-card li {
+    font-size: 14px;
+    color: #c4b5fd;
+    line-height: 1.8;
+  }
+  .interview-card ul {
+    padding-left: 20px;
+  }
+  .interview-card li { margin: 4px 0; }
+  .interview-card .quote {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-style: italic;
+    font-size: 14px;
+    color: #e2e8f0;
+    border-left: 3px solid #a78bfa;
+  }
+
+  /* Practice section */
+  .practice {
+    background: #1c1917;
+    border: 1px solid #78350f;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .practice h3 {
+    color: #fbbf24;
+    margin: 0 0 12px;
+  }
+  .practice-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #fde68a;
+  }
+  .practice-time {
+    background: #78350f;
+    color: #fde68a;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Nav */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+  }
+  .nav a {
+    color: #38bdf8;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    transition: all 0.2s;
+  }
+  .nav a:hover {
+    background: #1e293b;
+    border-color: #38bdf8;
+  }
+
+  /* Label badges */
+  .label {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .label-important { background: #991b1b; color: #fecaca; }
+</style>
+</head>
+<body>
+
+<!-- 1. Title -->
+<h1>手写柯里化 + 发布订阅</h1>
+<p class="subtitle">JavaScript 深度 · 手写高频题</p>
+
+<!-- ========== Part 1: 柯里化 ========== -->
+<h2>Part 1 · 柯里化 (Currying)</h2>
+
+<!-- 概念卡片 -->
+<div class="card">
+  <div class="key-point">
+    <strong>柯里化</strong>：把接受多个参数的函数转换为一系列接受单个参数的函数。<br>
+    <code class="code-inline">add(1, 2, 3)</code> → <code class="code-inline">curry(add)(1)(2)(3)</code>
+  </div>
+</div>
+
+<!-- 实现 -->
+<details>
+  <summary>实现 · curry 函数</summary>
+  <div class="step-content">
+    <pre><span class="kw">function</span> <span class="fn">curry</span>(<span class="pr">fn</span>) {
+  <span class="kw">return function</span> <span class="fn">curried</span>(...<span class="pr">args</span>) {
+    <span class="kw">if</span> (<span class="pr">args</span>.<span class="pr">length</span> <span class="op">>=</span> <span class="pr">fn</span>.<span class="pr">length</span>) {
+      <span class="kw">return</span> <span class="pr">fn</span>.<span class="fn">apply</span>(<span class="kw">this</span>, <span class="pr">args</span>)
+    }
+    <span class="kw">return function</span>(...<span class="pr">newArgs</span>) {
+      <span class="kw">return</span> <span class="fn">curried</span>.<span class="fn">apply</span>(<span class="kw">this</span>, [...<span class="pr">args</span>, ...<span class="pr">newArgs</span>])
+    }
+  }
+}</pre>
+
+    <div class="note">
+      核心思路：递归收集参数，当已收集的参数数量 <code class="code-inline">>= fn.length</code>（形参个数）时执行原函数，否则返回新函数继续收集。
+    </div>
+
+    <div class="quiz">
+      <div class="quiz-question">fn.length 是什么？</div>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+      <div class="quiz-answer">函数的<strong>形参个数</strong>。curry 通过比较已收集参数数量和形参数量来判断是否该执行。注意：rest 参数、默认值参数不计入 <code class="code-inline">fn.length</code>。</div>
+    </div>
+  </div>
+</details>
+
+<!-- 使用示例 -->
+<details>
+  <summary>使用示例</summary>
+  <div class="step-content">
+    <pre><span class="kw">const</span> <span class="pr">add</span> = (<span class="pr">a</span>, <span class="pr">b</span>, <span class="pr">c</span>) <span class="op">=></span> <span class="pr">a</span> <span class="op">+</span> <span class="pr">b</span> <span class="op">+</span> <span class="pr">c</span>
+<span class="kw">const</span> <span class="pr">curriedAdd</span> = <span class="fn">curry</span>(<span class="pr">add</span>)
+
+<span class="fn">curriedAdd</span>(<span class="num">1</span>)(<span class="num">2</span>)(<span class="num">3</span>)    <span class="cm">// 6</span>
+<span class="fn">curriedAdd</span>(<span class="num">1</span>, <span class="num">2</span>)(<span class="num">3</span>)    <span class="cm">// 6</span>
+<span class="fn">curriedAdd</span>(<span class="num">1</span>)(<span class="num">2</span>, <span class="num">3</span>)    <span class="cm">// 6</span></pre>
+
+    <div class="note">
+      柯里化的妙处在于<strong>灵活组合</strong>——可以一次传一个参数，也可以一次传多个，只要总数够了就执行。
+    </div>
+  </div>
+</details>
+
+<!-- ========== Part 2: 发布订阅 ========== -->
+<h2>Part 2 · 发布订阅 (EventEmitter)</h2>
+
+<!-- 概念卡片 -->
+<div class="card">
+  <div class="key-point">
+    <strong>发布订阅模式</strong>：一个事件中心，允许<strong>订阅(on)</strong>、<strong>发布(emit)</strong>、<strong>取消订阅(off)</strong>。<br>
+    Vue 的 <code class="code-inline">$emit/$on</code>、Node 的 <code class="code-inline">EventEmitter</code> 都是这个模式。
+  </div>
+</div>
+
+<!-- 实现 -->
+<details>
+  <summary><span class="label label-important">重点</span> 实现 · EventEmitter</summary>
+  <div class="step-content">
+    <pre><span class="kw">class</span> <span class="fn">EventEmitter</span> {
+  <span class="fn">constructor</span>() {
+    <span class="kw">this</span>.<span class="pr">events</span> = {}
+  }
+
+  <span class="fn">on</span>(<span class="pr">event</span>, <span class="pr">fn</span>) {
+    <span class="kw">if</span> (<span class="op">!</span><span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>]) <span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>] = []
+    <span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>].<span class="fn">push</span>(<span class="pr">fn</span>)
+  }
+
+  <span class="fn">off</span>(<span class="pr">event</span>, <span class="pr">fn</span>) {
+    <span class="kw">if</span> (<span class="op">!</span><span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>]) <span class="kw">return</span>
+    <span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>] = <span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>].<span class="fn">filter</span>(<span class="pr">f</span> <span class="op">=></span> <span class="pr">f</span> <span class="op">!==</span> <span class="pr">fn</span>)
+  }
+
+  <span class="fn">emit</span>(<span class="pr">event</span>, ...<span class="pr">args</span>) {
+    <span class="kw">if</span> (<span class="op">!</span><span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>]) <span class="kw">return</span>
+    <span class="kw">this</span>.<span class="pr">events</span>[<span class="pr">event</span>].<span class="fn">forEach</span>(<span class="pr">fn</span> <span class="op">=></span> <span class="fn">fn</span>(...<span class="pr">args</span>))
+  }
+
+  <span class="fn">once</span>(<span class="pr">event</span>, <span class="pr">fn</span>) {
+    <span class="kw">const</span> <span class="pr">wrapper</span> = (...<span class="pr">args</span>) <span class="op">=></span> {
+      <span class="fn">fn</span>(...<span class="pr">args</span>)
+      <span class="kw">this</span>.<span class="fn">off</span>(<span class="pr">event</span>, <span class="pr">wrapper</span>)
+    }
+    <span class="kw">this</span>.<span class="fn">on</span>(<span class="pr">event</span>, <span class="pr">wrapper</span>)
+  }
+}</pre>
+
+    <div class="quiz">
+      <div class="quiz-question">once 为什么要包一层 wrapper？</div>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+      <div class="quiz-answer">需要在执行后 <code class="code-inline">off</code> 掉自己，但 off 比较的是<strong>函数引用</strong>。如果直接 <code class="code-inline">off(fn)</code> 会找不到——因为 <code class="code-inline">on</code> 注册的是 wrapper 而不是 fn。所以必须 <code class="code-inline">off(event, wrapper)</code>，而这就要求我们用一个 wrapper 把 fn 包起来。</div>
+    </div>
+  </div>
+</details>
+
+<!-- ========== 面试话术 ========== -->
+<h2>面试话术</h2>
+<div class="interview-card">
+  <h3>当面试官问「手写柯里化」</h3>
+  <div class="quote">
+    「柯里化的核心是递归收集参数。返回的 curried 函数每次被调用时，把新参数追加到已有参数上。当参数总数达到原函数的形参数量（fn.length），就执行原函数；否则返回新函数继续等待参数。」
+  </div>
+
+  <h3 style="margin-top:16px;">当面试官问「手写发布订阅」</h3>
+  <div class="quote">
+    「发布订阅本质是一个事件中心，内部用一个对象维护事件名到回调数组的映射。on 就是往数组 push，emit 就是遍历数组执行，off 就是 filter 掉对应引用。once 的关键是用 wrapper 包装回调，执行后立即 off(wrapper)。」
+  </div>
+
+  <h3 style="margin-top:16px;">加分点</h3>
+  <ul>
+    <li>柯里化：提到它和偏函数（partial application）的区别</li>
+    <li>柯里化：提到 <code class="code-inline">fn.length</code> 对 rest 参数和默认值的限制</li>
+    <li>发布订阅：提到与观察者模式的区别（有无事件中心 / 中间层）</li>
+    <li>发布订阅：提到内存泄漏问题——忘记 off 会导致回调一直留在内存中</li>
+  </ul>
+</div>
+
+<!-- ========== 今晚练习 ========== -->
+<h2>今晚练习</h2>
+<div class="practice">
+  <h3>盲写计时挑战</h3>
+  <div class="practice-item">
+    <span class="practice-time">8 min</span>
+    手写 curry — 递归收集参数，fn.length 判断
+  </div>
+  <div class="practice-item">
+    <span class="practice-time">10 min</span>
+    手写 EventEmitter — on / off / emit / once 四个方法
+  </div>
+  <div class="practice-item" style="color: #94a3b8; font-size: 13px; margin-top: 4px;">
+    提示：先在脑中过一遍核心步骤，再动手。写不出来就回看一次，再盲写。
+  </div>
+</div>
+
+<!-- ========== Nav ========== -->
+<div class="nav">
+  <a href="call-bind-apply.html">&larr; call / bind</a>
+  <a href="promise-all-instanceof.html">Promise.all &rarr;</a>
+</div>
+
+<script>
+function toggleAnswer(btn) {
+  const answer = btn.nextElementSibling;
+  if (answer.classList.contains('show')) {
+    answer.classList.remove('show');
+    btn.textContent = '显示答案';
+  } else {
+    answer.classList.add('show');
+    btn.textContent = '隐藏答案';
+  }
+}
+</script>
+
+</body>
+</html>

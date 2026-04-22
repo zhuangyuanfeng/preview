@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手写 Promise</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 28px; margin-bottom: 8px; }
+  h2 { color: #7dd3fc; font-size: 20px; margin: 32px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 16px; margin: 20px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .card strong { color: #38bdf8; }
+
+  .concept-grid {
+    display: grid;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .concept-item {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid #334155;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .concept-num {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    background: #38bdf8;
+    color: #0f172a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  .problem-hint {
+    background: #3b1f00;
+    border-left: 3px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #fcd34d;
+  }
+
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  /* 可折叠区块 */
+  .collapsible {
+    background: #1e293b;
+    border-radius: 12px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+    overflow: hidden;
+  }
+  .collapsible-header {
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .collapsible-header:hover {
+    background: #253347;
+  }
+  .collapsible-header h3 {
+    margin: 0;
+    color: #7dd3fc;
+    font-size: 17px;
+  }
+  .collapsible-arrow {
+    color: #38bdf8;
+    font-size: 18px;
+    transition: transform 0.3s;
+  }
+  .collapsible.open .collapsible-arrow {
+    transform: rotate(90deg);
+  }
+  .collapsible-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .collapsible.open .collapsible-body {
+    max-height: 3000px;
+  }
+  .collapsible-content {
+    padding: 0 20px 20px;
+  }
+
+  /* Quiz */
+  .quiz {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .quiz-question {
+    font-size: 15px;
+    margin-bottom: 12px;
+    color: #fbbf24;
+    font-weight: 600;
+  }
+  .quiz-input {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 12px;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    margin: 8px 0;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .quiz-input:focus { border-color: #38bdf8; }
+  .quiz-input::placeholder { color: #475569; }
+
+  .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .btn-check {
+    background: #38bdf8;
+    color: #0f172a;
+  }
+  .btn-check:hover { background: #7dd3fc; }
+  .btn-show {
+    background: #334155;
+    color: #e2e8f0;
+    margin-left: 8px;
+  }
+  .btn-show:hover { background: #475569; }
+
+  .result {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: none;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .result.correct { display: block; background: #064e3b; border: 1px solid #059669; }
+  .result.wrong { display: block; background: #451a03; border: 1px solid #d97706; }
+  .result.shown { display: block; background: #1e293b; border: 1px solid #475569; }
+
+  /* 面试话术 */
+  .speech {
+    background: #1a2332;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    font-size: 14px;
+    line-height: 1.8;
+    position: relative;
+  }
+  .speech::before {
+    content: '面试话术';
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background: #1a2332;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* 练习要求 */
+  .practice-box {
+    background: #1e293b;
+    border: 2px solid #ef4444;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  .practice-box h3 {
+    color: #fca5a5;
+    margin-bottom: 12px;
+    font-size: 18px;
+  }
+  .practice-box ol {
+    padding-left: 20px;
+  }
+  .practice-box li {
+    padding: 4px 0;
+    font-size: 15px;
+  }
+
+  /* 进度条 */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #1e293b;
+    z-index: 100;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  /* 得分面板 */
+  .score-panel {
+    position: fixed;
+    top: 12px;
+    right: 20px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 13px;
+    z-index: 100;
+  }
+  .score-panel span { color: #38bdf8; font-weight: bold; }
+
+  /* 导航 */
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+    gap: 12px;
+  }
+  .btn-nav {
+    padding: 12px 32px;
+    background: #38bdf8;
+    color: #0f172a;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #7dd3fc; }
+  .btn-nav-secondary {
+    background: #334155;
+    color: #e2e8f0;
+  }
+  .btn-nav-secondary:hover { background: #475569; }
+
+  /* 步骤标签 */
+  .step-tag {
+    display: inline-block;
+    background: #38bdf8;
+    color: #0f172a;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+<div class="score-panel">正确 <span id="score">0</span> / <span id="total">2</span></div>
+
+<h1>手写 Promise</h1>
+<p class="subtitle">第1周 &middot; JavaScript 深度 &middot; 晚上动手写版</p>
+
+<!-- Promise 状态机图 -->
+<h2>Promise 状态机</h2>
+<div class="card" style="padding: 0; overflow: hidden; border: none;">
+  <img src="../assets/promise-states.png" alt="Promise 状态机" style="width: 100%; height: auto; display: block; border-radius: 12px;" />
+</div>
+
+<!-- 三个核心概念 -->
+<h2>三个核心概念</h2>
+<div class="concept-grid">
+  <div class="concept-item">
+    <div class="concept-num">1</div>
+    <div>Promise 有三种状态：<strong>pending</strong> &rarr; <strong>fulfilled</strong> 或 <strong>pending</strong> &rarr; <strong>rejected</strong></div>
+  </div>
+  <div class="concept-item">
+    <div class="concept-num">2</div>
+    <div><strong>状态变化不可逆</strong>——一旦从 pending 变成 fulfilled 或 rejected，就不能再变了</div>
+  </div>
+  <div class="concept-item">
+    <div class="concept-num">3</div>
+    <div><strong>executor 函数是同步执行的</strong>——new Promise(executor) 时，executor 立即被调用</div>
+  </div>
+</div>
+
+<!-- 第一步：基础骨架 -->
+<h2><span class="step-tag">第一步</span>基础骨架</h2>
+<div class="collapsible open" onclick="toggleCollapsible(this, event)">
+  <div class="collapsible-header">
+    <h3>展开查看代码</h3>
+    <span class="collapsible-arrow">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+    <div class="collapsible-content">
+      <pre><code><span class="hl-key">class</span> <span class="hl-fn">MyPromise</span> {
+  <span class="hl-fn">constructor</span>(<span class="hl-fn">executor</span>) {
+    <span class="hl-key">this</span>.state = <span class="hl-str">'pending'</span>
+    <span class="hl-key">this</span>.value = <span class="hl-key">undefined</span>
+    <span class="hl-key">this</span>.reason = <span class="hl-key">undefined</span>
+
+    <span class="hl-key">const</span> <span class="hl-fn">resolve</span> = (<span class="hl-fn">value</span>) => {
+      <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'pending'</span>) {
+        <span class="hl-key">this</span>.state = <span class="hl-str">'fulfilled'</span>
+        <span class="hl-key">this</span>.value = value
+      }
+    }
+
+    <span class="hl-key">const</span> <span class="hl-fn">reject</span> = (<span class="hl-fn">reason</span>) => {
+      <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'pending'</span>) {
+        <span class="hl-key">this</span>.state = <span class="hl-str">'rejected'</span>
+        <span class="hl-key">this</span>.reason = reason
+      }
+    }
+
+    <span class="hl-key">try</span> {
+      <span class="hl-fn">executor</span>(resolve, reject)
+    } <span class="hl-key">catch</span> (error) {
+      <span class="hl-fn">reject</span>(error)
+    }
+  }
+}</code></pre>
+      <div class="key-point">
+        <strong>关键点：</strong>executor 在 constructor 中同步执行，resolve/reject 通过闭包访问实例的 state。try-catch 捕获 executor 执行中的异常。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz 1 -->
+<div class="quiz" id="q1">
+  <div class="quiz-question">思考题：为什么 resolve/reject 要检查 state === 'pending'？</div>
+  <textarea class="quiz-input" id="a1" placeholder="输入你的理解..."></textarea>
+  <div>
+    <button class="btn btn-check" onclick="checkQuiz(1)">确认答案</button>
+    <button class="btn btn-show" onclick="showAnswer(1)">看答案</button>
+  </div>
+  <div class="result" id="r1">
+    <div><strong>答案：</strong></div>
+    <div>保证<strong>状态不可逆</strong>，只能从 pending 变化一次。如果不检查，连续调用 resolve 再 reject，状态会被覆盖，违反 Promise 规范。</div>
+  </div>
+</div>
+
+<!-- 第二步：实现 then 方法 -->
+<h2><span class="step-tag">第二步</span>实现 then 方法</h2>
+<div class="collapsible" onclick="toggleCollapsible(this, event)">
+  <div class="collapsible-header">
+    <h3>展开查看代码</h3>
+    <span class="collapsible-arrow">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+    <div class="collapsible-content">
+      <pre><code><span class="hl-fn">then</span>(<span class="hl-fn">onFulfilled</span>, <span class="hl-fn">onRejected</span>) {
+  <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'fulfilled'</span>) {
+    <span class="hl-fn">onFulfilled</span>(<span class="hl-key">this</span>.value)
+  }
+  <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'rejected'</span>) {
+    <span class="hl-fn">onRejected</span>(<span class="hl-key">this</span>.reason)
+  }
+}</code></pre>
+      <div class="problem-hint">
+        <strong>这个版本有问题！</strong><br>
+        如果 executor 里是异步的（比如 setTimeout 里调用 resolve），then 执行时 state 还是 pending，回调就丢了。
+      </div>
+      <pre><code><span class="hl-cmt">// 这种情况下 then 的回调不会被执行：</span>
+<span class="hl-key">const</span> p = <span class="hl-key">new</span> <span class="hl-fn">MyPromise</span>((<span class="hl-fn">resolve</span>) => {
+  <span class="hl-fn">setTimeout</span>(() => {
+    <span class="hl-fn">resolve</span>(<span class="hl-str">'hello'</span>)  <span class="hl-cmt">// 1秒后才resolve</span>
+  }, <span class="hl-num">1000</span>)
+})
+
+p.<span class="hl-fn">then</span>(<span class="hl-fn">val</span> => console.<span class="hl-fn">log</span>(val))
+<span class="hl-cmt">// then 执行时 state 还是 pending，两个 if 都不满足</span></code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 第三步：支持异步——回调存储 -->
+<h2><span class="step-tag">第三步</span>支持异步——回调存储</h2>
+<div class="collapsible" onclick="toggleCollapsible(this, event)">
+  <div class="collapsible-header">
+    <h3>展开查看代码（完整版）</h3>
+    <span class="collapsible-arrow">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+    <div class="collapsible-content">
+      <pre><code><span class="hl-key">class</span> <span class="hl-fn">MyPromise</span> {
+  <span class="hl-fn">constructor</span>(<span class="hl-fn">executor</span>) {
+    <span class="hl-key">this</span>.state = <span class="hl-str">'pending'</span>
+    <span class="hl-key">this</span>.value = <span class="hl-key">undefined</span>
+    <span class="hl-key">this</span>.reason = <span class="hl-key">undefined</span>
+    <span class="hl-key">this</span>.onFulfilledCallbacks = []
+    <span class="hl-key">this</span>.onRejectedCallbacks = []
+
+    <span class="hl-key">const</span> <span class="hl-fn">resolve</span> = (<span class="hl-fn">value</span>) => {
+      <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'pending'</span>) {
+        <span class="hl-key">this</span>.state = <span class="hl-str">'fulfilled'</span>
+        <span class="hl-key">this</span>.value = value
+        <span class="hl-key">this</span>.onFulfilledCallbacks.<span class="hl-fn">forEach</span>(<span class="hl-fn">fn</span> => <span class="hl-fn">fn</span>())
+      }
+    }
+
+    <span class="hl-key">const</span> <span class="hl-fn">reject</span> = (<span class="hl-fn">reason</span>) => {
+      <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'pending'</span>) {
+        <span class="hl-key">this</span>.state = <span class="hl-str">'rejected'</span>
+        <span class="hl-key">this</span>.reason = reason
+        <span class="hl-key">this</span>.onRejectedCallbacks.<span class="hl-fn">forEach</span>(<span class="hl-fn">fn</span> => <span class="hl-fn">fn</span>())
+      }
+    }
+
+    <span class="hl-key">try</span> {
+      <span class="hl-fn">executor</span>(resolve, reject)
+    } <span class="hl-key">catch</span> (error) {
+      <span class="hl-fn">reject</span>(error)
+    }
+  }
+
+  <span class="hl-fn">then</span>(<span class="hl-fn">onFulfilled</span>, <span class="hl-fn">onRejected</span>) {
+    <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'fulfilled'</span>) {
+      <span class="hl-fn">onFulfilled</span>(<span class="hl-key">this</span>.value)
+    }
+    <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'rejected'</span>) {
+      <span class="hl-fn">onRejected</span>(<span class="hl-key">this</span>.reason)
+    }
+    <span class="hl-key">if</span> (<span class="hl-key">this</span>.state === <span class="hl-str">'pending'</span>) {
+      <span class="hl-key">this</span>.onFulfilledCallbacks.<span class="hl-fn">push</span>(() => <span class="hl-fn">onFulfilled</span>(<span class="hl-key">this</span>.value))
+      <span class="hl-key">this</span>.onRejectedCallbacks.<span class="hl-fn">push</span>(() => <span class="hl-fn">onRejected</span>(<span class="hl-key">this</span>.reason))
+    }
+  }
+}</code></pre>
+      <div class="key-point">
+        <strong>核心改进：</strong><br>
+        1. 新增两个回调数组 <code>onFulfilledCallbacks</code> 和 <code>onRejectedCallbacks</code><br>
+        2. then 中如果 state 是 pending，把回调存到数组里<br>
+        3. resolve/reject 执行时，遍历数组依次触发回调
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz 2 -->
+<div class="quiz" id="q2">
+  <div class="quiz-question">思考题：为什么用数组存回调而不是单个变量？</div>
+  <textarea class="quiz-input" id="a2" placeholder="输入你的理解..."></textarea>
+  <div>
+    <button class="btn btn-check" onclick="checkQuiz(2)">确认答案</button>
+    <button class="btn btn-show" onclick="showAnswer(2)">看答案</button>
+  </div>
+  <div class="result" id="r2">
+    <div><strong>答案：</strong></div>
+    <div>因为同一个 promise 可以<strong>多次调用 then</strong>，每次 then 都会注册一个新的回调。如果用单个变量，后注册的回调会覆盖前面的。</div>
+    <pre><code><span class="hl-key">const</span> p = <span class="hl-key">new</span> <span class="hl-fn">MyPromise</span>(<span class="hl-fn">resolve</span> => <span class="hl-fn">setTimeout</span>(<span class="hl-fn">resolve</span>, <span class="hl-num">1000</span>))
+p.<span class="hl-fn">then</span>(() => console.<span class="hl-fn">log</span>(<span class="hl-str">'回调1'</span>))  <span class="hl-cmt">// 不能丢</span>
+p.<span class="hl-fn">then</span>(() => console.<span class="hl-fn">log</span>(<span class="hl-str">'回调2'</span>))  <span class="hl-cmt">// 也不能丢</span></code></pre>
+  </div>
+</div>
+
+<!-- 面试话术 -->
+<h2>面试回答模板</h2>
+<div class="speech">
+  "Promise 的核心是一个<strong>状态机</strong>。constructor 接收 executor 并<strong>同步执行</strong>，内部提供 resolve 和 reject 两个函数来改变状态。then 方法根据当前状态决定是<strong>立即执行回调</strong>还是<strong>存储回调</strong>等待状态变化时触发。"
+</div>
+
+<!-- 今晚练习要求 -->
+<h2>今晚练习要求</h2>
+<div class="practice-box">
+  <h3>动手写一遍！</h3>
+  <ol>
+    <li>关掉这个页面，打开编辑器</li>
+    <li><strong>不看任何参考</strong>，手写上面的第三步完整版本</li>
+    <li>目标：<strong>15分钟内</strong>写完能跑通</li>
+    <li>用以下测试代码自行验证：</li>
+  </ol>
+  <pre><code><span class="hl-cmt">// 测试1：同步 resolve</span>
+<span class="hl-key">const</span> p1 = <span class="hl-key">new</span> <span class="hl-fn">MyPromise</span>((<span class="hl-fn">resolve</span>) => {
+  <span class="hl-fn">resolve</span>(<span class="hl-str">'success'</span>)
+})
+p1.<span class="hl-fn">then</span>(<span class="hl-fn">val</span> => console.<span class="hl-fn">log</span>(val))  <span class="hl-cmt">// 'success'</span>
+
+<span class="hl-cmt">// 测试2：异步 resolve</span>
+<span class="hl-key">const</span> p2 = <span class="hl-key">new</span> <span class="hl-fn">MyPromise</span>((<span class="hl-fn">resolve</span>) => {
+  <span class="hl-fn">setTimeout</span>(() => <span class="hl-fn">resolve</span>(<span class="hl-str">'async'</span>), <span class="hl-num">1000</span>)
+})
+p2.<span class="hl-fn">then</span>(<span class="hl-fn">val</span> => console.<span class="hl-fn">log</span>(val))  <span class="hl-cmt">// 1秒后 'async'</span>
+
+<span class="hl-cmt">// 测试3：多次 then</span>
+p2.<span class="hl-fn">then</span>(<span class="hl-fn">val</span> => console.<span class="hl-fn">log</span>(<span class="hl-str">'又一次：'</span> + val))
+
+<span class="hl-cmt">// 测试4：executor 异常</span>
+<span class="hl-key">const</span> p3 = <span class="hl-key">new</span> <span class="hl-fn">MyPromise</span>(() => {
+  <span class="hl-key">throw new</span> <span class="hl-fn">Error</span>(<span class="hl-str">'boom'</span>)
+})
+p3.<span class="hl-fn">then</span>(<span class="hl-key">null</span>, <span class="hl-fn">err</span> => console.<span class="hl-fn">log</span>(err.message))  <span class="hl-cmt">// 'boom'</span></code></pre>
+</div>
+
+<!-- 导航 -->
+<div class="nav-bottom">
+  <a class="btn-nav btn-nav-secondary" href="event-loop.html">&larr; 事件循环</a>
+  <a class="btn-nav" href="#">下一篇 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuestions = 2
+const answered = new Set()
+
+const answers = {
+  1: ['状态不可逆', '不可逆', '只能变化一次', '只能改变一次', 'pending'],
+  2: ['多次调用then', '多次then', '多个then', '数组', '多次调用']
+}
+
+function checkQuiz(n) {
+  if (answered.has(n)) return
+  const input = document.getElementById('a' + n).value.trim()
+  const result = document.getElementById('r' + n)
+  const keywords = answers[n]
+  const matched = keywords.some(k => input.includes(k))
+
+  if (input.length > 0 && matched) {
+    result.className = 'result correct'
+    score++
+  } else if (input.length === 0) {
+    return
+  } else {
+    result.className = 'result wrong'
+  }
+  answered.add(n)
+  document.getElementById('score').textContent = score
+  document.getElementById('progress').style.width = (answered.size / totalQuestions * 100) + '%'
+}
+
+function showAnswer(n) {
+  const result = document.getElementById('r' + n)
+  if (!answered.has(n)) answered.add(n)
+  result.className = 'result shown'
+  document.getElementById('progress').style.width = (answered.size / totalQuestions * 100) + '%'
+}
+
+function toggleCollapsible(el, event) {
+  // Don't toggle if clicking inside the body content (e.g., selecting code)
+  if (event.target.closest('.collapsible-body')) return
+  el.classList.toggle('open')
+}
+
+// 回车提交
+document.querySelectorAll('.quiz-input').forEach((input) => {
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      input.parentElement.querySelector('.btn-check').click()
+    }
+  })
+})
+</script>
+</body>
+</html>

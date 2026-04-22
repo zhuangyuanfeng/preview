@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#15 三数之和 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 15px; margin: 16px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-medium { background: #854d0e; color: #fbbf24; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  /* Progress bar */
+  .progress-bar {
+    background: #1e293b;
+    border-radius: 8px;
+    height: 8px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+    height: 100%;
+    border-radius: 8px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Score */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .score-val { color: #38bdf8; font-weight: bold; font-size: 16px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .diagram-img {
+    width: 100%;
+    max-width: 500px;
+    display: block;
+    margin: 16px auto;
+    border-radius: 8px;
+  }
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .complexity-table th,
+  .complexity-table td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+  }
+  .complexity-table th {
+    color: #94a3b8;
+    font-weight: normal;
+    font-size: 12px;
+  }
+  .complexity-table td { color: #38bdf8; font-weight: bold; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; }
+
+  .link-chain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .link-node {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-align: center;
+  }
+  .link-node strong { color: #38bdf8; display: block; font-size: 13px; }
+  .link-node span { color: #94a3b8; font-size: 12px; }
+  .link-arrow { color: #475569; font-size: 18px; }
+  .link-node.current { border-color: #38bdf8; background: #1e3a5f; }
+
+  .dedup-item {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+  }
+  .dedup-item code { color: #38bdf8; }
+  .dedup-label {
+    color: #fbbf24;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Score & Progress -->
+<div class="score-bar">
+  <span>学习进度</span>
+  <span>得分：<span class="score-val" id="score">0</span> / 2</span>
+</div>
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<h1>#15 三数之和 <span class="tag-medium">Medium</span></h1>
+<p class="subtitle">Hot 100 · 双指针 · 第2周</p>
+
+<!-- Diagram -->
+<h2>图示</h2>
+<div class="card">
+  <img class="diagram-img" src="../../assets/three-sum.png" alt="三数之和示意图">
+</div>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给定一个整数数组 <code>nums</code>，找出所有满足 <code>a + b + c = 0</code> 的三元组 <code>[a, b, c]</code>，答案中不能包含重复的三元组。</p>
+  <pre><code>输入：nums = [<span class="hl-num">-1, 0, 1, 2, -1, -4</span>]
+输出：[[<span class="hl-num">-1, -1, 2</span>], [<span class="hl-num">-1, 0, 1</span>]]</code></pre>
+</div>
+
+<!-- Quiz 1: 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="think1">
+  <p style="margin-bottom:12px">暴力三层循环是 O(n³)，怎么优化？</p>
+  <button class="btn btn-primary" onclick="showThink(1)">我想好了</button>
+  <div class="think-result hidden" id="think1-result">
+    <p><strong>排序 + 双指针：</strong></p>
+    <p style="margin-top:8px">先排序 O(n log n)，然后遍历数组，固定一个数 <code>nums[i]</code>，对剩余部分用<strong>对撞双指针</strong>找两个数使三数之和为 0。</p>
+    <p style="margin-top:8px">外层循环 O(n) × 内层双指针 O(n) = <span style="color:#38bdf8">总共 O(n²)</span>，比暴力快了一个数量级。</p>
+  </div>
+</div>
+
+<!-- 核心思路 -->
+<h2>核心思路</h2>
+<div class="key-point">
+  排序后遍历 <code>i</code>，对于每个 <code>nums[i]</code>，用<strong>对撞双指针</strong>在 <code>i+1</code> 到末尾找两个数，使三数之和为 0。<br>
+  本质：把三数之和问题降维成<strong>对每个 i 做一次两数之和</strong>。
+</div>
+
+<!-- 思路步骤 -->
+<h2>解题步骤（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 排序数组</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p><code>nums.sort((a, b) => a - b)</code></p>
+      <p style="margin-top:8px">排序是整个算法的基础：让双指针可以根据 sum 的大小移动方向，同时让相同元素相邻，方便去重。</p>
+      <p style="margin-top:8px; color:#94a3b8">例：<code>[-1, 0, 1, 2, -1, -4]</code> → <code>[-4, -1, -1, 0, 1, 2]</code></p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 遍历 i 从 0 到 n-3，固定 nums[i]</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>外层循环固定第一个数 <code>nums[i]</code>，问题变成：在 <code>i+1</code> 到 <code>n-1</code> 范围内找两个数之和等于 <code>-nums[i]</code>。</p>
+      <p style="margin-top:8px"><strong>剪枝优化：</strong>如果 <code>nums[i] > 0</code>，后面的数都比它大，三数之和不可能为 0，直接 <code>break</code>。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> left = i+1, right = n-1，双指针找 target = -nums[i]</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>在已排序的子数组中，左指针从 <code>i+1</code> 开始，右指针从末尾开始，向中间逼近。</p>
+      <p style="margin-top:8px">计算 <code>sum = nums[i] + nums[left] + nums[right]</code>：</p>
+      <ul style="margin-top:8px; padding-left:20px">
+        <li><code>sum < 0</code> → 和太小，<code>left++</code> 让和变大</li>
+        <li><code>sum > 0</code> → 和太大，<code>right--</code> 让和变小</li>
+        <li><code>sum === 0</code> → 找到一组答案！</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">4</span> sum === 0 → 记录答案并跳过重复</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>找到答案后，记录 <code>[nums[i], nums[left], nums[right]]</code>。</p>
+      <p style="margin-top:8px">然后跳过 left 和 right 的重复值（见下面去重详解），最后 <code>left++</code>、<code>right--</code> 继续搜索。</p>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz 2: 去重 -->
+<h2>去重是难点</h2>
+<div class="think-box" id="think2">
+  <p style="margin-bottom:12px">为什么需要去重？怎么去重？</p>
+  <button class="btn btn-primary" onclick="showThink(2)">我想好了</button>
+  <div class="think-result hidden" id="think2-result">
+    <p><strong>为什么需要去重？</strong></p>
+    <p style="margin-top:6px">排序后数组可能有重复元素，比如 <code>[-1, -1, 0, 1, 2]</code>。如果不去重，<code>i=0</code> 和 <code>i=1</code> 都是 <code>-1</code>，会产生相同的三元组。</p>
+
+    <div style="margin-top:16px">
+      <div class="dedup-item">
+        <div class="dedup-label">i 层去重</div>
+        <p><code>if (i > 0 && nums[i] === nums[i-1]) continue</code></p>
+        <p style="color:#94a3b8; margin-top:4px">跳过和前一个相同的 i，避免固定相同的数</p>
+      </div>
+
+      <div class="dedup-item">
+        <div class="dedup-label">left / right 层去重</div>
+        <p>找到答案后：</p>
+        <p><code>while (left < right && nums[left] === nums[left+1]) left++</code></p>
+        <p><code>while (left < right && nums[right] === nums[right-1]) right--</code></p>
+        <p style="color:#94a3b8; margin-top:4px">跳过重复的 left 和 right 值，避免记录相同的三元组</p>
+      </div>
+    </div>
+
+    <div class="key-point" style="margin-top:12px">
+      <strong>关键前提：</strong>排序让相同值相邻，才能通过和相邻元素比较来跳过重复。
+    </div>
+  </div>
+</div>
+
+<!-- 完整代码 -->
+<h2>完整代码</h2>
+<div class="card">
+  <pre><code><span class="hl-key">function</span> <span class="hl-fn">threeSum</span>(nums) {
+  nums.<span class="hl-fn">sort</span>((a, b) => a - b)
+  <span class="hl-key">const</span> result = []
+  <span class="hl-key">for</span> (<span class="hl-key">let</span> i = <span class="hl-num">0</span>; i < nums.length - <span class="hl-num">2</span>; i++) {
+    <span class="hl-key">if</span> (nums[i] > <span class="hl-num">0</span>) <span class="hl-key">break</span>                        <span class="hl-cmt">// 剪枝：最小值 > 0，不可能三数之和为 0</span>
+    <span class="hl-key">if</span> (i > <span class="hl-num">0</span> && nums[i] === nums[i - <span class="hl-num">1</span>]) <span class="hl-key">continue</span>  <span class="hl-cmt">// i 层去重</span>
+    <span class="hl-key">let</span> left = i + <span class="hl-num">1</span>, right = nums.length - <span class="hl-num">1</span>
+    <span class="hl-key">while</span> (left < right) {
+      <span class="hl-key">const</span> sum = nums[i] + nums[left] + nums[right]
+      <span class="hl-key">if</span> (sum < <span class="hl-num">0</span>) {
+        left++
+      } <span class="hl-key">else if</span> (sum > <span class="hl-num">0</span>) {
+        right--
+      } <span class="hl-key">else</span> {
+        result.<span class="hl-fn">push</span>([nums[i], nums[left], nums[right]])
+        <span class="hl-key">while</span> (left < right && nums[left] === nums[left + <span class="hl-num">1</span>]) left++    <span class="hl-cmt">// left 去重</span>
+        <span class="hl-key">while</span> (left < right && nums[right] === nums[right - <span class="hl-num">1</span>]) right--  <span class="hl-cmt">// right 去重</span>
+        left++
+        right--
+      }
+    }
+  }
+  <span class="hl-key">return</span> result
+}</code></pre>
+</div>
+
+<!-- 复杂度 -->
+<h2>复杂度分析</h2>
+<div class="card">
+  <table class="complexity-table">
+    <tr><th>维度</th><th>复杂度</th><th>说明</th></tr>
+    <tr>
+      <td style="color:#e2e8f0; font-weight:normal">时间</td>
+      <td>O(n²)</td>
+      <td style="color:#94a3b8; font-weight:normal">排序 O(n log n) + 外层 O(n) × 内层双指针 O(n)</td>
+    </tr>
+    <tr>
+      <td style="color:#e2e8f0; font-weight:normal">空间</td>
+      <td>O(1)</td>
+      <td style="color:#94a3b8; font-weight:normal">不算排序空间和返回结果，只用了指针变量</td>
+    </tr>
+  </table>
+</div>
+
+<!-- 知识串联 -->
+<h2>知识串联</h2>
+<div class="card">
+  <div class="link-chain">
+    <div class="link-node">
+      <strong>#1 两数之和</strong>
+      <span>哈希表</span>
+    </div>
+    <span class="link-arrow">→</span>
+    <div class="link-node">
+      <strong>#11 盛水容器</strong>
+      <span>对撞指针</span>
+    </div>
+    <span class="link-arrow">→</span>
+    <div class="link-node current">
+      <strong>#15 三数之和</strong>
+      <span>排序 + 对撞指针</span>
+    </div>
+  </div>
+  <div class="key-point" style="margin-top:12px">
+    <strong>三数之和的本质：</strong>对每个 <code>nums[i]</code>，在剩余数组中做一次<strong>两数之和</strong>（用双指针而非哈希表，因为数组已排序）。
+  </div>
+</div>
+
+<!-- 今晚任务 -->
+<div class="tonight">
+  <h3>今晚练习要求</h3>
+  <ol style="padding-left:20px; margin-top:8px;">
+    <li>关掉这个页面，打开 LeetCode #15</li>
+    <li>自己手写排序 + 双指针解法</li>
+    <li>目标：<strong>15 分钟内</strong>写完并 AC</li>
+    <li>重点注意去重逻辑：i 层去重 + left/right 层去重</li>
+    <li>如果卡住了，回来看去重部分，然后关掉重写</li>
+  </ol>
+</div>
+
+<!-- Navigation -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="438-find-anagrams.html">&larr; 找到所有字母异位词</a>
+  <a class="btn-nav primary" href="#">下一题 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuiz = 2
+let answered = { q1: false, q2: false }
+
+function updateScore() {
+  document.getElementById('score').textContent = score
+  const pct = (score / totalQuiz) * 100
+  document.getElementById('progress').style.width = pct + '%'
+}
+
+function toggleStep(header) {
+  const body = header.nextElementSibling
+  const arrow = header.querySelector('.step-arrow')
+  body.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function showThink(n) {
+  document.getElementById('think' + n + '-result').classList.remove('hidden')
+  if (n === 1 && !answered.q1) {
+    answered.q1 = true
+    score++
+    updateScore()
+  }
+  if (n === 2 && !answered.q2) {
+    answered.q2 = true
+    score++
+    updateScore()
+  }
+}
+</script>
+</body>
+</html>

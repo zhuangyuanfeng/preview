@@ -1,0 +1,88 @@
+{
+  "records": {
+    "2026-03-20": {
+      "day": "Day 1",
+      "done": true,
+      "time": "00:30",
+      "tasks": {
+        "0": { "done": true, "note": "事件循环5题对了2题(2,5)，没卡住" },
+        "1": { "done": true, "note": "两数之和，比较顺利" }
+      }
+    },
+    "2026-03-21": {
+      "day": "Day 2",
+      "done": true,
+      "time": "00:30",
+      "tasks": {
+        "0": { "done": true, "note": "复习事件循环第3、4题" },
+        "1": { "done": true, "note": "字母异位词分组，搞定" }
+      }
+    },
+    "2026-03-22": {
+      "day": "Day 3",
+      "done": true,
+      "time": "00:30",
+      "tasks": {
+        "0": { "done": true, "note": "Promise 手写看前两步" },
+        "1": { "done": true, "note": "#128 最长连续序列" },
+        "2": { "done": true, "note": "Promise 第三步完整版，两个卡壳点：1.then中state非pending时错误地push到回调数组而非直接执行 2.pending时push了onFulfilled()立即调用而非()=>onFulfilled(this.value)箭头函数" }
+      }
+    },
+    "2026-03-23": {
+      "day": "Day 4",
+      "done": true,
+      "time": "00:30",
+      "tasks": {
+        "0": { "done": true, "note": "复习 Promise then 逻辑两个坑点" },
+        "1": { "done": true, "note": "#283 移动零，不顺利。s2++放在if前导致跳过index0且可能越界。教训：双指针用for不用while" }
+      }
+    },
+    "2026-03-24": {
+      "day": "Day 5",
+      "done": true,
+      "time": "01:00",
+      "tasks": {
+        "0": { "done": true, "note": "复习移动零 for 循环版" },
+        "1": { "done": true, "note": "#11 盛水容器，不顺利。while条件错+left应该++写成了--。困了脑子不清晰" }
+      }
+    },
+    "2026-03-25": {
+      "day": "Day 6",
+      "done": true,
+      "time": "00:30",
+      "tasks": {
+        "0": { "done": true, "note": "回忆盛水容器双指针" },
+        "1": { "done": true, "note": "#3 无重复字符最长子串，一般。问题1:用数组includes(忘了字符串可直接下标)。问题2:while<=应为<。框架是对的" }
+      }
+    },
+    "2026-03-26": {
+      "day": "Day 7",
+      "done": true,
+      "time": "00:30",
+      "tasks": {
+        "0": { "done": true, "note": "复习#3滑动窗口模板" },
+        "1": { "done": true, "note": "#438 异位词，不顺利。一开始用Set方向错了，看答案后转计数数组。但最终独立写出了" }
+      }
+    },
+    "2026-03-27": {
+      "day": "Day 8",
+      "done": true,
+      "time": "homework",
+      "tasks": {
+        "0": { "done": true, "note": "深拷贝：致命错误。判断逻辑反了(typeof obj == object 应该是 !==)，递归参数传错(传了obj应该传obj[key])，Date/RegExp检查位置错。说明递归边界判断没建立模型" },
+        "1": { "done": true, "note": "防抖：粗心拼错(time vs delay)。学习过程中才意识到闭包+return function的必要性" },
+        "2": { "done": true, "note": "节流：API用错 new Date().now() 应为 Date.now() 或 new Date().getTime()" }
+      },
+      "weakness": ["闭包模型", "递归边界判断", "高阶函数 return function 思维"]
+    }
+  },
+  "stats": {
+    "startDate": "2026-03-20",
+    "totalStudyDays": 8,
+    "currentStreak": 8,
+    "maxStreak": 8,
+    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438"],
+    "jsHandwrite": ["promise", "deepClone-buggy", "debounce-typo", "throttle-api-err"],
+    "weeklyAssessments": []
+  }
+}

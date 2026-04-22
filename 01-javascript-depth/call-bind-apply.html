@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手写 call / apply / bind</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 28px; margin-bottom: 8px; }
+  h2 { color: #7dd3fc; font-size: 20px; margin: 32px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 16px; margin: 20px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 24px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    background: #0f172a;
+    color: #38bdf8;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid #334155;
+    font-weight: 600;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #334155;
+    color: #cbd5e1;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child {
+    color: #38bdf8;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: nowrap;
+  }
+
+  /* Code blocks */
+  pre {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin: 12px 0;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  .code-inline {
+    background: #334155;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #7dd3fc;
+  }
+
+  /* Syntax highlighting */
+  .kw { color: #c084fc; }       /* keyword */
+  .fn { color: #38bdf8; }       /* function name */
+  .str { color: #4ade80; }      /* string */
+  .cm { color: #64748b; }       /* comment */
+  .op { color: #f472b6; }       /* operator */
+  .num { color: #fb923c; }      /* number */
+  .pr { color: #fbbf24; }       /* property */
+  .bi { color: #22d3ee; }       /* built-in */
+
+  /* Collapsible */
+  details { margin: 16px 0; }
+  summary {
+    cursor: pointer;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #7dd3fc;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+  }
+  summary:hover { background: #253348; }
+  summary::before {
+    content: '\25B6';
+    font-size: 12px;
+    transition: transform 0.2s;
+    color: #38bdf8;
+  }
+  details[open] > summary::before { transform: rotate(90deg); }
+  details[open] > summary {
+    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid #334155;
+  }
+  .step-content {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 20px;
+  }
+
+  /* Quiz */
+  .quiz {
+    background: #1a1a3e;
+    border: 1px solid #4338ca;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .quiz-question {
+    color: #a78bfa;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .quiz-question::before {
+    content: '?';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    background: #4338ca;
+    color: white;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .quiz-answer {
+    display: none;
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #a5f3fc;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+  .quiz-answer.show { display: block; }
+  .quiz-btn {
+    background: #4338ca;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .quiz-btn:hover { background: #5b4fe0; }
+
+  /* Key point / note / warn */
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #bae6fd;
+  }
+  .note {
+    background: #1a2e1a;
+    border-left: 3px solid #4ade80;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #86efac;
+  }
+  .warn {
+    background: #2e1a1a;
+    border-left: 3px solid #f87171;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    color: #fca5a5;
+  }
+
+  /* Interview card */
+  .interview-card {
+    background: linear-gradient(135deg, #1e293b 0%, #1a1a3e 100%);
+    border: 1px solid #4338ca;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .interview-card h3 { color: #a78bfa; margin: 0 0 12px; font-size: 15px; }
+  .interview-card p, .interview-card li { font-size: 14px; color: #c4b5fd; line-height: 1.8; }
+  .interview-card ul { padding-left: 20px; }
+  .interview-card li { margin: 4px 0; }
+  .interview-card .quote {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-style: italic;
+    font-size: 14px;
+    color: #e2e8f0;
+    border-left: 3px solid #a78bfa;
+  }
+
+  /* Practice section */
+  .practice {
+    background: #1c1917;
+    border: 1px solid #78350f;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .practice h3 { color: #fbbf24; margin: 0 0 12px; }
+  .practice-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: #fde68a;
+  }
+  .practice-time {
+    background: #78350f;
+    color: #fde68a;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Nav */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+  }
+  .nav a {
+    color: #38bdf8;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    transition: all 0.2s;
+  }
+  .nav a:hover { background: #1e293b; border-color: #38bdf8; }
+
+  /* Label badges */
+  .label {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .label-important { background: #991b1b; color: #fecaca; }
+  .label-new { background: #065f46; color: #6ee7b7; }
+
+  /* Scenario blocks */
+  .scenario {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+  .scenario-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #38bdf8;
+    margin-bottom: 8px;
+  }
+  .scenario p {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    font-size: 13px;
+    font-family: 'SF Mono', monospace;
+  }
+  .flow-step {
+    background: #334155;
+    color: #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .flow-arrow { color: #38bdf8; font-weight: 700; }
+  .flow-step.highlight { background: #38bdf8; color: #0f172a; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 1. Title -->
+<!-- ═══════════════════════════════════════════ -->
+<h1>手写 call / apply / bind</h1>
+<p class="subtitle">JavaScript 深度 · Day 9 · 碎片时间+晚上动手写</p>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 2. 为什么要学这个 -->
+<!-- ═══════════════════════════════════════════ -->
+<h2>为什么要学这个</h2>
+<div class="card">
+  <p style="font-size:14px; color:#cbd5e1; line-height:1.8;">
+    在 JavaScript 中，<code class="code-inline">this</code> 的指向取决于<strong style="color:#38bdf8;">函数的调用方式</strong>，而不是定义位置。这导致一个经典问题：
+  </p>
+  <pre><span class="kw">const</span> <span class="pr">timer</span> = {
+  <span class="pr">seconds</span>: <span class="num">0</span>,
+  <span class="fn">tick</span>() { <span class="kw">this</span>.<span class="pr">seconds</span>++ }
+}
+
+<span class="bi">setInterval</span>(<span class="pr">timer</span>.<span class="pr">tick</span>, <span class="num">1000</span>)
+<span class="cm">// this.seconds++ 报错！</span>
+<span class="cm">// 因为 setInterval 里 this 指向 window，不是 timer</span></pre>
+  <p style="font-size:14px; color:#cbd5e1; line-height:1.8; margin-top:12px;">
+    <code class="code-inline">call</code> / <code class="code-inline">apply</code> / <code class="code-inline">bind</code> 就是 JS 提供的三把工具，让你<strong style="color:#fbbf24;">手动指定 this 到底指向谁</strong>。
+  </p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 3. 三者区别（扩充版） -->
+<!-- ═══════════════════════════════════════════ -->
+<h2>三者对比</h2>
+<div class="card">
+  <table>
+    <tr>
+      <th>方法</th>
+      <th>执行时机</th>
+      <th>参数格式</th>
+      <th>返回值</th>
+    </tr>
+    <tr>
+      <td>call</td>
+      <td>立即执行</td>
+      <td><code class="code-inline">fn.call(ctx, a, b, c)</code></td>
+      <td>函数的返回值</td>
+    </tr>
+    <tr>
+      <td>apply</td>
+      <td>立即执行</td>
+      <td><code class="code-inline">fn.apply(ctx, [a, b, c])</code></td>
+      <td>函数的返回值</td>
+    </tr>
+    <tr>
+      <td>bind</td>
+      <td>不执行</td>
+      <td><code class="code-inline">fn.bind(ctx, a)(b, c)</code></td>
+      <td>一个新函数</td>
+    </tr>
+  </table>
+  <div class="key-point" style="margin-top:16px;">
+    <strong>记忆口诀：</strong><br>
+    call → 打电话，马上接，一个一个说<br>
+    apply → 申请表，马上交，信息打包一份交<br>
+    bind → 绑定，先绑好，以后再打
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 4. 核心原理（先讲透再手写） -->
+<!-- ═══════════════════════════════════════════ -->
+<h2>核心原理</h2>
+<div class="card">
+  <h3 style="color:#fbbf24; margin-bottom:12px;">this 到底怎么决定的？</h3>
+  <p style="font-size:14px; color:#cbd5e1; line-height:1.8; margin-bottom:12px;">
+    JS 里 this 的指向遵循一条铁律：<strong style="color:#38bdf8;">「谁调用函数，this 就指向谁」</strong>
+  </p>
+  <pre><span class="pr">obj</span>.<span class="fn">method</span>()   <span class="cm">// this === obj     （obj 在调用）</span>
+<span class="fn">method</span>()       <span class="cm">// this === window  （没人调用 = window 调用）</span>
+<span class="kw">new</span> <span class="fn">Foo</span>()      <span class="cm">// this === 新实例    （new 创建的对象）</span>
+<span class="fn">fn</span>.<span class="fn">call</span>(<span class="pr">obj</span>)   <span class="cm">// this === obj     （手动指定）</span></pre>
+
+  <h3 style="color:#fbbf24; margin-top:24px; margin-bottom:12px;">call 的底层思路</h3>
+  <p style="font-size:14px; color:#cbd5e1; line-height:1.8;">
+    既然 <code class="code-inline">obj.method()</code> 的 this 会指向 obj，那只要：
+  </p>
+  <div class="flow">
+    <span class="flow-step">把 fn 挂到 obj 上</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step highlight">obj.fn() 调用</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">this === obj</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">delete obj.fn</span>
+  </div>
+  <pre><span class="cm">// 本质上，greet.call(obj, 'Hi', '!') 等价于：</span>
+<span class="pr">obj</span>.<span class="pr">__temp__</span> = <span class="fn">greet</span>             <span class="cm">// Step 1: 挂上去</span>
+<span class="kw">const</span> <span class="pr">result</span> = <span class="pr">obj</span>.<span class="fn">__temp__</span>(<span class="str">'Hi'</span>, <span class="str">'!'</span>)  <span class="cm">// Step 2: 作为方法调用 → this === obj</span>
+<span class="kw">delete</span> <span class="pr">obj</span>.<span class="pr">__temp__</span>              <span class="cm">// Step 3: 清理</span></pre>
+  <div class="warn">
+    <strong>问题：</strong> 如果 obj 上已经有一个属性叫 <code class="code-inline">__temp__</code>，就会被覆盖！<br>
+    <strong>解法：</strong> 用 <code class="code-inline">Symbol()</code> 做 key —— 每次生成的 Symbol 都是全局唯一的，永远不会和已有属性冲突。
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 5. 手写 call（详细版） -->
+<!-- ═══════════════════════════════════════════ -->
+<h2>手写实现</h2>
+
+<details open>
+  <summary>Step 1 · 手写 call</summary>
+  <div class="step-content">
+    <pre><span class="kw">Function</span>.<span class="pr">prototype</span>.<span class="fn">myCall</span> = <span class="kw">function</span> (<span class="pr">context</span>, ...<span class="pr">args</span>) {
+  <span class="cm">// 1. context 为 null/undefined → 指向全局对象</span>
+  <span class="pr">context</span> = <span class="pr">context</span> <span class="op">??</span> <span class="bi">globalThis</span>
+
+  <span class="cm">// 2. 原始值（数字/字符串/布尔）需要包装成对象</span>
+  <span class="cm">//    因为原始值上不能挂属性</span>
+  <span class="kw">if</span> (<span class="kw">typeof</span> <span class="pr">context</span> !== <span class="str">'object'</span> <span class="op">&amp;&amp;</span> <span class="kw">typeof</span> <span class="pr">context</span> !== <span class="str">'function'</span>) {
+    <span class="pr">context</span> = <span class="bi">Object</span>(<span class="pr">context</span>)
+  }
+
+  <span class="cm">// 3. 创建唯一 key</span>
+  <span class="kw">const</span> <span class="pr">key</span> = <span class="bi">Symbol</span>(<span class="str">'tempFn'</span>)
+
+  <span class="cm">// 4. this 就是调用 myCall 的那个函数</span>
+  <span class="cm">//    greet.myCall(obj) → this === greet</span>
+  <span class="pr">context</span>[<span class="pr">key</span>] = <span class="kw">this</span>
+
+  <span class="cm">// 5. 通过 context.method() 调用 → this 指向 context</span>
+  <span class="kw">const</span> <span class="pr">result</span> = <span class="pr">context</span>[<span class="pr">key</span>](...<span class="pr">args</span>)
+
+  <span class="cm">// 6. 清理临时属性</span>
+  <span class="kw">delete</span> <span class="pr">context</span>[<span class="pr">key</span>]
+
+  <span class="kw">return</span> <span class="pr">result</span>
+}</pre>
+
+    <div class="quiz">
+      <div class="quiz-question">为什么用 Symbol 而不是普通字符串作 key？</div>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+      <div class="quiz-answer">Symbol 保证全局唯一。如果用 <code class="code-inline">'__tempFn__'</code>，万一 context 上已有同名属性，就会被覆盖 → 产生 bug 并且很难排查。Symbol 是零冲突方案。</div>
+    </div>
+
+    <div class="quiz">
+      <div class="quiz-question">为什么 <code class="code-inline">this</code> 就是 greet 函数？</div>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+      <div class="quiz-answer">还是那条规则：「谁调用，this 就指向谁」。<code class="code-inline">greet.myCall(obj)</code> 里，myCall 是通过 greet 调用的 → 所以 myCall 内部的 this 就是 greet。</div>
+    </div>
+
+    <div class="quiz">
+      <div class="quiz-question">为什么要处理原始值（<code class="code-inline">Object(context)</code>）？</div>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+      <div class="quiz-answer">原始值（如数字 <code class="code-inline">42</code>）不是对象，不能在上面挂属性。<code class="code-inline">42[key] = fn</code> 会静默失败。<code class="code-inline">Object(42)</code> 会把它包装成 <code class="code-inline">Number {42}</code> 对象，就可以挂属性了。原生 call 就是这么处理的。</div>
+    </div>
+  </div>
+</details>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 6. 手写 apply -->
+<!-- ═══════════════════════════════════════════ -->
+<details>
+  <summary>Step 2 · 手写 apply</summary>
+  <div class="step-content">
+    <div class="note" style="margin-top:0;">和 call 只有<strong>一个区别</strong>：第二个参数是数组，不是展开的散列参数。</div>
+
+    <pre><span class="kw">Function</span>.<span class="pr">prototype</span>.<span class="fn">myApply</span> = <span class="kw">function</span> (<span class="pr">context</span>, <span class="pr">argsArray</span>) {
+  <span class="pr">context</span> = <span class="pr">context</span> <span class="op">??</span> <span class="bi">globalThis</span>
+  <span class="kw">if</span> (<span class="kw">typeof</span> <span class="pr">context</span> !== <span class="str">'object'</span> <span class="op">&amp;&amp;</span> <span class="kw">typeof</span> <span class="pr">context</span> !== <span class="str">'function'</span>) {
+    <span class="pr">context</span> = <span class="bi">Object</span>(<span class="pr">context</span>)
+  }
+
+  <span class="kw">const</span> <span class="pr">key</span> = <span class="bi">Symbol</span>(<span class="str">'tempFn'</span>)
+  <span class="pr">context</span>[<span class="pr">key</span>] = <span class="kw">this</span>
+
+  <span class="cm">// 唯一区别：argsArray 可能不传，需要兜底</span>
+  <span class="kw">const</span> <span class="pr">result</span> = <span class="pr">argsArray</span>
+    ? <span class="pr">context</span>[<span class="pr">key</span>](...<span class="pr">argsArray</span>)
+    : <span class="pr">context</span>[<span class="pr">key</span>]()
+
+  <span class="kw">delete</span> <span class="pr">context</span>[<span class="pr">key</span>]
+  <span class="kw">return</span> <span class="pr">result</span>
+}</pre>
+
+    <div class="key-point">
+      <strong>为什么 ES6 之后 apply 用得少了？</strong><br>
+      因为展开运算符 <code class="code-inline">...</code> 直接替代了它唯一的优势：
+    </div>
+    <pre><span class="cm">// ES5: 展开数组只能靠 apply</span>
+<span class="bi">Math</span>.<span class="fn">max</span>.<span class="fn">apply</span>(<span class="num">null</span>, [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>])   <span class="cm">// 5</span>
+
+<span class="cm">// ES6+: 直接展开</span>
+<span class="bi">Math</span>.<span class="fn">max</span>(...[<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>])           <span class="cm">// 5</span></pre>
+  </div>
+</details>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 7. 手写 bind（重点，大幅扩充） -->
+<!-- ═══════════════════════════════════════════ -->
+<details open>
+  <summary><span class="label label-important">重点</span> Step 3 · 手写 bind</summary>
+  <div class="step-content">
+    <h3 style="color:#fbbf24; margin-bottom:8px;">bind 和 call/apply 的本质区别</h3>
+    <div class="flow" style="margin-bottom:16px;">
+      <span class="flow-step">call / apply</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">立即执行，用完就完</span>
+    </div>
+    <div class="flow" style="margin-bottom:16px;">
+      <span class="flow-step highlight">bind</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">不执行，返回新函数</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">新函数的 this 被永久锁定</span>
+    </div>
+
+    <pre><span class="kw">const</span> <span class="pr">obj</span> = { <span class="pr">name</span>: <span class="str">'Bob'</span> }
+
+<span class="kw">function</span> <span class="fn">greet</span>(<span class="pr">greeting</span>, <span class="pr">punct</span>) {
+  <span class="kw">return</span> <span class="pr">greeting</span> + <span class="str">', '</span> + <span class="kw">this</span>.<span class="pr">name</span> + <span class="pr">punct</span>
+}
+
+<span class="cm">// call: 立即出结果</span>
+<span class="fn">greet</span>.<span class="fn">call</span>(<span class="pr">obj</span>, <span class="str">'Hi'</span>, <span class="str">'!'</span>)     <span class="cm">// "Hi, Bob!"</span>
+
+<span class="cm">// bind: 先拿到新函数，以后想用几次用几次</span>
+<span class="kw">const</span> <span class="pr">boundGreet</span> = <span class="fn">greet</span>.<span class="fn">bind</span>(<span class="pr">obj</span>)
+<span class="fn">boundGreet</span>(<span class="str">'Hi'</span>, <span class="str">'!'</span>)          <span class="cm">// "Hi, Bob!"</span>
+<span class="fn">boundGreet</span>(<span class="str">'Hey'</span>, <span class="str">'~'</span>)         <span class="cm">// "Hey, Bob~"</span></pre>
+
+    <h3 style="color:#fbbf24; margin-top:24px; margin-bottom:8px;">偏函数（Partial Application）</h3>
+    <p style="font-size:14px; color:#cbd5e1; line-height:1.8; margin-bottom:12px;">
+      bind 可以在绑定 this 的同时<strong style="color:#38bdf8;">预填一部分参数</strong>，剩下的在调用时再传：
+    </p>
+    <pre><span class="kw">const</span> <span class="pr">sayHey</span> = <span class="fn">greet</span>.<span class="fn">bind</span>(<span class="pr">obj</span>, <span class="str">'Hey'</span>)  <span class="cm">// 预填 greeting = 'Hey'</span>
+<span class="fn">sayHey</span>(<span class="str">'!'</span>)    <span class="cm">// "Hey, Bob!"   ← 只需传 punct</span>
+<span class="fn">sayHey</span>(<span class="str">'~'</span>)    <span class="cm">// "Hey, Bob~"</span>
+
+<span class="cm">// 实际上发生了什么：</span>
+<span class="cm">//   bind 时传了 ['Hey']        → outerArgs</span>
+<span class="cm">//   调用时传了 ['!']           → innerArgs</span>
+<span class="cm">//   最终拼成    ['Hey', '!']   → 传给原函数</span></pre>
+
+    <h3 style="color:#fbbf24; margin-top:24px; margin-bottom:8px;">基础版实现</h3>
+    <pre><span class="kw">Function</span>.<span class="pr">prototype</span>.<span class="fn">myBind</span> = <span class="kw">function</span> (<span class="pr">context</span>, ...<span class="pr">outerArgs</span>) {
+  <span class="cm">// this = 原函数（greet.myBind → this === greet）</span>
+  <span class="kw">const</span> <span class="pr">originalFn</span> = <span class="kw">this</span>
+
+  <span class="cm">// 返回一个新函数</span>
+  <span class="kw">return function</span> <span class="fn">boundFn</span>(...<span class="pr">innerArgs</span>) {
+    <span class="cm">// 把两次传入的参数拼起来，用 call 指定 this</span>
+    <span class="kw">return</span> <span class="pr">originalFn</span>.<span class="fn">call</span>(<span class="pr">context</span>, ...<span class="pr">outerArgs</span>, ...<span class="pr">innerArgs</span>)
+  }
+}</pre>
+
+    <div class="quiz">
+      <div class="quiz-question">为什么 <code class="code-inline">const originalFn = this</code> 要在外面保存？</div>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+      <div class="quiz-answer">因为返回的 <code class="code-inline">boundFn</code> 被调用时，它内部的 <code class="code-inline">this</code> 已经不是原函数了（可能是 window 或调用者）。所以必须在外层闭包里把原函数存下来。这就是经典的<strong>闭包保存外层变量</strong>模式。</div>
+    </div>
+
+    <h3 style="color:#fbbf24; margin-top:24px; margin-bottom:8px;"><span class="label label-new">进阶</span> 支持 new 的完整版</h3>
+    <p style="font-size:14px; color:#94a3b8; line-height:1.8; margin-bottom:12px;">
+      原生 bind 返回的函数可以被 <code class="code-inline">new</code> 调用。此时 this 应该指向新实例，而不是 bind 时的 context：
+    </p>
+    <pre><span class="kw">Function</span>.<span class="pr">prototype</span>.<span class="fn">myBind</span> = <span class="kw">function</span> (<span class="pr">context</span>, ...<span class="pr">outerArgs</span>) {
+  <span class="kw">const</span> <span class="pr">originalFn</span> = <span class="kw">this</span>
+
+  <span class="kw">function</span> <span class="fn">boundFn</span>(...<span class="pr">innerArgs</span>) {
+    <span class="cm">// 关键判断：是 new 调用还是普通调用</span>
+    <span class="kw">const</span> <span class="pr">isNew</span> = <span class="kw">this</span> <span class="kw">instanceof</span> <span class="fn">boundFn</span>
+    <span class="kw">return</span> <span class="pr">originalFn</span>.<span class="fn">call</span>(
+      <span class="pr">isNew</span> ? <span class="kw">this</span> : <span class="pr">context</span>,   <span class="cm">// new → 用新实例；普通 → 用 context</span>
+      ...<span class="pr">outerArgs</span>,
+      ...<span class="pr">innerArgs</span>
+    )
+  }
+
+  <span class="cm">// 继承原函数的原型链，让 instanceof 正常工作</span>
+  <span class="pr">boundFn</span>.<span class="pr">prototype</span> = <span class="bi">Object</span>.<span class="fn">create</span>(<span class="pr">originalFn</span>.<span class="pr">prototype</span>)
+  <span class="kw">return</span> <span class="pr">boundFn</span>
+}</pre>
+
+    <div class="quiz">
+      <div class="quiz-question">面试只需要写到基础版还是完整版？</div>
+      <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+      <div class="quiz-answer">先写基础版，写完后主动说「如果要支持 new 调用还需要判断 <code class="code-inline">this instanceof boundFn</code>」——不用真写出来，但<strong>提到这个知识点</strong>就是加分项。面试官看的是你知不知道这个边界，不是能不能默写。</div>
+    </div>
+  </div>
+</details>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 8. 实战场景（新增） -->
+<!-- ═══════════════════════════════════════════ -->
+<h2>实战场景速查</h2>
+
+<div class="scenario">
+  <div class="scenario-title">场景 1 · 判断精确类型（call）</div>
+  <p><code class="code-inline">typeof</code> 只能区分原始类型，对象一律返回 <code class="code-inline">'object'</code>。要精确判断得借用 <code class="code-inline">Object.prototype.toString</code>：</p>
+  <pre><span class="bi">Object</span>.<span class="pr">prototype</span>.<span class="fn">toString</span>.<span class="fn">call</span>([])        <span class="cm">// "[object Array]"</span>
+<span class="bi">Object</span>.<span class="pr">prototype</span>.<span class="fn">toString</span>.<span class="fn">call</span>(<span class="num">null</span>)      <span class="cm">// "[object Null]"</span>
+<span class="bi">Object</span>.<span class="pr">prototype</span>.<span class="fn">toString</span>.<span class="fn">call</span>(<span class="kw">undefined</span>) <span class="cm">// "[object Undefined]"</span>
+<span class="bi">Object</span>.<span class="pr">prototype</span>.<span class="fn">toString</span>.<span class="fn">call</span>(<span class="kw">new</span> <span class="fn">Date</span>)  <span class="cm">// "[object Date]"</span>
+<span class="bi">Object</span>.<span class="pr">prototype</span>.<span class="fn">toString</span>.<span class="fn">call</span>(<span class="str">/re/</span>)     <span class="cm">// "[object RegExp]"</span></pre>
+</div>
+
+<div class="scenario">
+  <div class="scenario-title">场景 2 · 类数组转真数组（call）</div>
+  <p><code class="code-inline">arguments</code>、<code class="code-inline">NodeList</code> 等类数组没有数组方法，借用 Array 的：</p>
+  <pre><span class="cm">// ES5 经典写法</span>
+<span class="kw">function</span> <span class="fn">foo</span>() {
+  <span class="kw">var</span> <span class="pr">args</span> = <span class="bi">Array</span>.<span class="pr">prototype</span>.<span class="fn">slice</span>.<span class="fn">call</span>(<span class="pr">arguments</span>)
+  <span class="cm">// arguments 没有 .slice()，借 Array 的来用</span>
+}
+
+<span class="cm">// ES6+ 直接用：</span>
+<span class="kw">const</span> <span class="pr">args</span> = [...<span class="pr">arguments</span>]
+<span class="cm">// 或</span>
+<span class="kw">const</span> <span class="pr">args</span> = <span class="bi">Array</span>.<span class="fn">from</span>(<span class="pr">arguments</span>)</pre>
+</div>
+
+<div class="scenario">
+  <div class="scenario-title">场景 3 · 事件回调锁定 this（bind）</div>
+  <pre><span class="kw">class</span> <span class="fn">Timer</span> {
+  <span class="fn">constructor</span>() {
+    <span class="kw">this</span>.<span class="pr">seconds</span> = <span class="num">0</span>
+
+    <span class="cm">// 方法 A: bind</span>
+    <span class="bi">setInterval</span>(<span class="kw">this</span>.<span class="pr">tick</span>.<span class="fn">bind</span>(<span class="kw">this</span>), <span class="num">1000</span>)
+
+    <span class="cm">// 方法 B: 箭头函数（ES6+ 更常用）</span>
+    <span class="bi">setInterval</span>(() <span class="op">=></span> <span class="kw">this</span>.<span class="fn">tick</span>(), <span class="num">1000</span>)
+  }
+  <span class="fn">tick</span>() { <span class="kw">this</span>.<span class="pr">seconds</span>++ }
+}</pre>
+</div>
+
+<div class="scenario">
+  <div class="scenario-title">场景 4 · 预填参数 / 偏函数（bind）</div>
+  <pre><span class="kw">function</span> <span class="fn">log</span>(<span class="pr">level</span>, <span class="pr">module</span>, <span class="pr">msg</span>) {
+  console.<span class="fn">log</span>(<span class="str">`[</span>${<span class="pr">level</span>}<span class="str">] </span>${<span class="pr">module</span>}<span class="str">: </span>${<span class="pr">msg</span>}<span class="str">`</span>)
+}
+
+<span class="cm">// 预填 level 和 module，生成专用 logger</span>
+<span class="kw">const</span> <span class="pr">dbWarn</span>  = <span class="fn">log</span>.<span class="fn">bind</span>(<span class="num">null</span>, <span class="str">'WARN'</span>, <span class="str">'DB'</span>)
+<span class="kw">const</span> <span class="pr">apiInfo</span> = <span class="fn">log</span>.<span class="fn">bind</span>(<span class="num">null</span>, <span class="str">'INFO'</span>, <span class="str">'API'</span>)
+
+<span class="fn">dbWarn</span>(<span class="str">'connection timeout'</span>)   <span class="cm">// "[WARN] DB: connection timeout"</span>
+<span class="fn">apiInfo</span>(<span class="str">'request received'</span>)   <span class="cm">// "[INFO] API: request received"</span></pre>
+</div>
+
+<div class="scenario">
+  <div class="scenario-title">场景 5 · React 类组件（bind）</div>
+  <p style="margin-bottom:4px;">React 类组件中事件处理函数的 this 不会自动绑定：</p>
+  <pre><span class="kw">class</span> <span class="fn">App</span> <span class="kw">extends</span> <span class="fn">React</span>.<span class="fn">Component</span> {
+  <span class="fn">constructor</span>(<span class="pr">props</span>) {
+    <span class="kw">super</span>(<span class="pr">props</span>)
+    <span class="cm">// 不 bind 的话 onClick 触发时 this 是 undefined</span>
+    <span class="kw">this</span>.<span class="pr">handleClick</span> = <span class="kw">this</span>.<span class="pr">handleClick</span>.<span class="fn">bind</span>(<span class="kw">this</span>)
+  }
+  <span class="fn">handleClick</span>() { console.<span class="fn">log</span>(<span class="kw">this</span>.<span class="pr">state</span>) }
+}
+
+<span class="cm">// 现代写法：箭头函数 class field 自动绑定</span>
+<span class="kw">class</span> <span class="fn">App</span> <span class="kw">extends</span> <span class="fn">React</span>.<span class="fn">Component</span> {
+  <span class="fn">handleClick</span> = () <span class="op">=></span> { console.<span class="fn">log</span>(<span class="kw">this</span>.<span class="pr">state</span>) }
+}</pre>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 9. 面试话术（扩充） -->
+<!-- ═══════════════════════════════════════════ -->
+<h2>面试话术</h2>
+<div class="interview-card">
+  <h3>当面试官问「手写 call / apply / bind」</h3>
+  <div class="quote">
+    「call 和 apply 的核心思路一样：把目标函数临时挂到 context 上作为方法调用，这样 this 就自然指向 context 了。调完用 delete 清掉。用 Symbol 做 key 避免属性冲突。两者唯一区别就是参数格式——call 逐个传，apply 传数组。」
+  </div>
+  <div class="quote">
+    「bind 不同于前两者，它返回一个新函数而不是立即执行。核心是用闭包保存 context 和预传参数，调用时再把两批参数拼起来走 call。如果要完整实现还需要处理 new 的情况——new 的优先级高于 bind，this 应该指向新实例。」
+  </div>
+  <h3 style="margin-top:16px;">加分回答清单</h3>
+  <ul>
+    <li>提到 <code class="code-inline">Symbol</code> 防属性冲突（而不是用 <code class="code-inline">'__temp__'</code>）</li>
+    <li>提到 <code class="code-inline">context ?? globalThis</code> 而不是 <code class="code-inline">context || window</code>（严格模式兼容）</li>
+    <li>提到原始值需要 <code class="code-inline">Object()</code> 包装</li>
+    <li>提到 bind 是偏函数（partial application），和柯里化的关系</li>
+    <li>提到 bind + new 的优先级：<code class="code-inline">this instanceof boundFn</code></li>
+    <li>提到 ES6 箭头函数已经能覆盖大部分 bind 的场景</li>
+  </ul>
+
+  <h3 style="margin-top:16px;">常见追问</h3>
+  <div class="quiz">
+    <div class="quiz-question">call 和 apply 性能有区别吗？</div>
+    <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+    <div class="quiz-answer">现代引擎差异可以忽略。V8 内部对两者都做了优化。选择哪个取决于你的参数是散列的还是数组——有数组用 apply（或直接展开），没数组用 call。</div>
+  </div>
+  <div class="quiz">
+    <div class="quiz-question">箭头函数能用 call/apply/bind 改 this 吗？</div>
+    <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+    <div class="quiz-answer"><strong>不能。</strong>箭头函数没有自己的 this，它的 this 在定义时就从外层词法作用域继承了，无法被 call/apply/bind 覆盖。这也是箭头函数能"自动绑定"的原因。</div>
+  </div>
+  <div class="quiz">
+    <div class="quiz-question">bind 两次会怎样？<code class="code-inline">fn.bind(a).bind(b)()</code></div>
+    <button class="quiz-btn" onclick="toggleAnswer(this)">显示答案</button>
+    <div class="quiz-answer"><strong>this 指向 a，不是 b。</strong>第一次 bind 返回的新函数内部已经用闭包锁死了 context = a。第二次 bind 虽然又包了一层，但调用时走到最里面还是 <code class="code-inline">originalFn.call(a, ...)</code>。所以 <strong>bind 只有第一次生效</strong>。</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 10. 测试代码 -->
+<!-- ═══════════════════════════════════════════ -->
+<details>
+  <summary>完整测试代码</summary>
+  <div class="step-content">
+    <pre><span class="kw">const</span> <span class="pr">obj</span> = { <span class="pr">name</span>: <span class="str">'张三'</span> }
+
+<span class="kw">function</span> <span class="fn">greet</span>(<span class="pr">greeting</span>, <span class="pr">punctuation</span>) {
+  <span class="kw">return</span> <span class="pr">greeting</span> + <span class="str">', '</span> + <span class="kw">this</span>.<span class="pr">name</span> + <span class="pr">punctuation</span>
+}
+
+<span class="cm">// ── 测试 myCall ──</span>
+console.<span class="fn">log</span>(<span class="fn">greet</span>.<span class="fn">myCall</span>(<span class="pr">obj</span>, <span class="str">'Hello'</span>, <span class="str">'!'</span>))
+<span class="cm">// => "Hello, 张三!"</span>
+
+<span class="cm">// ── 测试 myApply ──</span>
+console.<span class="fn">log</span>(<span class="fn">greet</span>.<span class="fn">myApply</span>(<span class="pr">obj</span>, [<span class="str">'Hi'</span>, <span class="str">'.'</span>]))
+<span class="cm">// => "Hi, 张三."</span>
+
+<span class="cm">// ── 测试 myBind ──</span>
+<span class="kw">const</span> <span class="pr">bound</span> = <span class="fn">greet</span>.<span class="fn">myBind</span>(<span class="pr">obj</span>, <span class="str">'Hey'</span>)
+console.<span class="fn">log</span>(<span class="fn">bound</span>(<span class="str">'~'</span>))
+<span class="cm">// => "Hey, 张三~"</span>
+
+<span class="cm">// ── 测试 myBind: 不预填参数 ──</span>
+<span class="kw">const</span> <span class="pr">bound2</span> = <span class="fn">greet</span>.<span class="fn">myBind</span>(<span class="pr">obj</span>)
+console.<span class="fn">log</span>(<span class="fn">bound2</span>(<span class="str">'Yo'</span>, <span class="str">'!'</span>))
+<span class="cm">// => "Yo, 张三!"</span>
+
+<span class="cm">// ── 测试 context = null ──</span>
+<span class="kw">function</span> <span class="fn">getGlobal</span>() { <span class="kw">return</span> <span class="kw">this</span> }
+console.<span class="fn">log</span>(<span class="fn">getGlobal</span>.<span class="fn">myCall</span>(<span class="num">null</span>) === <span class="bi">globalThis</span>)
+<span class="cm">// => true</span></pre>
+  </div>
+</details>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 11. 今晚练习 -->
+<!-- ═══════════════════════════════════════════ -->
+<h2>今晚练习</h2>
+<div class="practice">
+  <h3>盲写计时挑战</h3>
+  <div class="practice-item">
+    <span class="practice-time">5 min</span>
+    手写 myCall — 不看代码，从零写出来
+  </div>
+  <div class="practice-item">
+    <span class="practice-time">3 min</span>
+    手写 myApply — 和 call 只差一个参数
+  </div>
+  <div class="practice-item">
+    <span class="practice-time">8 min</span>
+    手写 myBind — 重点理解闭包 + call 的组合
+  </div>
+  <div class="practice-item" style="color: #94a3b8; font-size: 13px; margin-top: 4px;">
+    提示：先在脑中过一遍核心步骤，再动手。写不出来就回看一次，再盲写。
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 12. Nav -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="nav">
+  <a href="debounce-throttle.html">&larr; 防抖节流</a>
+  <a href="deep-copy.html">深拷贝 &rarr;</a>
+</div>
+
+<script>
+function toggleAnswer(btn) {
+  const answer = btn.nextElementSibling;
+  if (answer.classList.contains('show')) {
+    answer.classList.remove('show');
+    btn.textContent = '显示答案';
+  } else {
+    answer.classList.add('show');
+    btn.textContent = '隐藏答案';
+  }
+}
+</script>
+
+</body>
+</html>

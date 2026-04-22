@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#206 反转链表 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-easy { background: #065f46; color: #6ee7b7; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .card-yellow {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 2px solid #eab308;
+  }
+  .card-yellow strong { color: #facc15; }
+
+  .image-placeholder {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 40px 20px;
+    margin: 16px 0;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+
+  /* Simulation table */
+  .sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+  }
+  .sim-table th {
+    background: #334155;
+    color: #94a3b8;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 2px solid #475569;
+  }
+  .sim-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #1e293b;
+    vertical-align: top;
+  }
+  .sim-table tr:hover { background: #1e293b; }
+  .sim-table .val-prev { color: #c084fc; }
+  .sim-table .val-curr { color: #38bdf8; }
+  .sim-table .val-next { color: #fbbf24; }
+  .sim-table .val-chain { color: #34d399; }
+  .sim-table .row-final { background: #064e3b; }
+  .sim-table .row-final td { border-bottom: none; }
+
+  /* Expandable code */
+  .expandable {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  .expandable-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .expandable-header:hover { background: #334155; }
+  .expandable-body {
+    display: none;
+    padding: 0 16px 16px;
+  }
+  .expandable-body.open { display: block; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; font-size: 15px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<h1>#206 反转链表 <span class="tag-easy">Easy</span></h1>
+<p class="subtitle">Hot 100 · 链表 · 第3周</p>
+
+<div style="padding:0;overflow:hidden;border:none;">
+  <img src="../../assets/reverse-linked-list.png" alt="反转链表" style="width:100%;height:auto;display:block;border-radius:12px;" />
+</div>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>反转一个单链表。</p>
+  <pre><code>输入：<span class="hl-num">1</span> → <span class="hl-num">2</span> → <span class="hl-num">3</span> → <span class="hl-num">4</span> → <span class="hl-num">5</span>
+输出：<span class="hl-num">5</span> → <span class="hl-num">4</span> → <span class="hl-num">3</span> → <span class="hl-num">2</span> → <span class="hl-num">1</span></code></pre>
+</div>
+
+<!-- 链表基础 -->
+<h2>链表基础</h2>
+<div class="card">
+  <p><strong style="color:#38bdf8">链表节点结构：</strong></p>
+  <pre><code>{ <span class="hl-key">val</span>: 数据, <span class="hl-key">next</span>: 指向下一个节点的指针 }</code></pre>
+  <p style="margin-top:12px"><strong style="color:#38bdf8">和数组的区别：</strong></p>
+  <ul style="padding-left:20px; margin-top:8px; font-size:14px">
+    <li>不能随机访问（没有下标），只能从头一个一个遍历</li>
+    <li>但插入和删除操作是 <strong>O(1)</strong>（只要知道位置，改指针就行）</li>
+    <li>数组插入删除是 O(n)（需要移动后面所有元素）</li>
+  </ul>
+</div>
+
+<!-- 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="quiz1">
+  <p style="margin-bottom:12px">反转链表需要几个指针变量？分别有什么作用？</p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkQuiz1(2)">2个</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1(3)">3个</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1(4)">4个</button>
+  </div>
+  <div class="think-result hidden" id="quiz1-result"></div>
+</div>
+
+<!-- 思路 -->
+<h2>思路（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 初始化指针</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code><span class="hl-key">prev</span> = <span class="hl-num">null</span></code>，<code><span class="hl-key">curr</span> = <span class="hl-fn">head</span></code></p>
+      <p style="margin-top:8px; color:#94a3b8">prev 是"已反转部分"的头，一开始还没反转任何节点，所以是 null。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 暂存下一个节点</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code><span class="hl-key">next</span> = curr.<span class="hl-fn">next</span></code></p>
+      <p style="margin-top:8px; color:#94a3b8">因为下一步要改 curr.next 的指向，所以必须先把原来的 next 存起来，否则链就断了。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 反转指针</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code>curr.<span class="hl-fn">next</span> = <span class="hl-key">prev</span></code></p>
+      <p style="margin-top:8px; color:#94a3b8">这是核心操作！把当前节点的 next 从"指向后面"改为"指向前面"。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">4</span> 移动指针</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code><span class="hl-key">prev</span> = curr</code>，<code><span class="hl-key">curr</span> = next</code></p>
+      <p style="margin-top:8px; color:#94a3b8">prev 和 curr 都向前走一步，准备处理下一个节点。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">5</span> 循环 &amp; 返回</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>重复步骤 2-4，直到 <code>curr === <span class="hl-num">null</span></code>（所有节点都处理完了）。</p>
+      <p style="margin-top:8px">最后返回 <code><span class="hl-key">prev</span></code>，它就是新链表的头节点。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 模拟过程 -->
+<h2>模拟过程</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">以链表 1→2→3 为例，跟着走一遍</p>
+
+<div class="card" style="padding:12px; overflow-x:auto;">
+  <table class="sim-table">
+    <thead>
+      <tr>
+        <th>阶段</th>
+        <th>next</th>
+        <th>操作后链表</th>
+        <th>prev</th>
+        <th>curr</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>初始</td>
+        <td>-</td>
+        <td class="val-chain">1→2→3</td>
+        <td class="val-prev">null</td>
+        <td class="val-curr">1</td>
+      </tr>
+      <tr>
+        <td>Step 1</td>
+        <td class="val-next">2</td>
+        <td class="val-chain">1→null</td>
+        <td class="val-prev">1</td>
+        <td class="val-curr">2</td>
+      </tr>
+      <tr>
+        <td>Step 2</td>
+        <td class="val-next">3</td>
+        <td class="val-chain">2→1→null</td>
+        <td class="val-prev">2</td>
+        <td class="val-curr">3</td>
+      </tr>
+      <tr>
+        <td>Step 3</td>
+        <td class="val-next">null</td>
+        <td class="val-chain">3→2→1→null</td>
+        <td class="val-prev">3</td>
+        <td class="val-curr">null</td>
+      </tr>
+      <tr class="row-final">
+        <td colspan="2"><strong>结束</strong></td>
+        <td colspan="3" class="val-chain"><strong>return prev → 3→2→1→null</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 迭代版代码 -->
+<h2>迭代版代码</h2>
+<div class="key-point">时间 O(n)，空间 O(1) —— 面试首选写法</div>
+<pre><code><span class="hl-key">function</span> <span class="hl-fn">reverseList</span>(head) {
+  <span class="hl-key">let</span> prev = <span class="hl-num">null</span>
+  <span class="hl-key">let</span> curr = head
+  <span class="hl-key">while</span> (curr) {
+    <span class="hl-key">const</span> next = curr.next  <span class="hl-cmt">// 暂存</span>
+    curr.next = prev         <span class="hl-cmt">// 反转</span>
+    prev = curr              <span class="hl-cmt">// 前进</span>
+    curr = next              <span class="hl-cmt">// 前进</span>
+  }
+  <span class="hl-key">return</span> prev
+}</code></pre>
+
+<!-- 递归版代码 -->
+<h2>递归版代码</h2>
+<div class="expandable">
+  <div class="expandable-header" onclick="toggleExpandable(this)">
+    <span>点击展开递归版（理解即可，不要求盲写）</span>
+    <span class="step-arrow">▶</span>
+  </div>
+  <div class="expandable-body">
+    <div class="key-point">时间 O(n)，空间 O(n)（递归栈）—— 理解递归思维</div>
+    <pre><code><span class="hl-key">function</span> <span class="hl-fn">reverseList</span>(head) {
+  <span class="hl-key">if</span> (!head || !head.next) <span class="hl-key">return</span> head
+  <span class="hl-key">const</span> newHead = <span class="hl-fn">reverseList</span>(head.next)
+  head.next.next = head  <span class="hl-cmt">// 让下一个节点指回自己</span>
+  head.next = <span class="hl-num">null</span>       <span class="hl-cmt">// 断开原来的正向链接</span>
+  <span class="hl-key">return</span> newHead
+}</code></pre>
+  </div>
+</div>
+
+<!-- 递归 Quiz -->
+<h2>递归理解检验</h2>
+<div class="think-box" id="quiz2">
+  <p style="margin-bottom:12px">递归版中 <code>head.next.next = head</code> 是什么意思？</p>
+  <button class="btn btn-primary" onclick="showQuiz2()">看答案</button>
+  <div class="think-result hidden" id="quiz2-result">
+    <p><code>head.next</code> 是原链表中 head 的下一个节点。</p>
+    <p style="margin-top:8px"><code>head.next.next = head</code> 就是让这个"下一个节点"的 next 指回 head，实现反转。</p>
+    <p style="margin-top:8px">然后 <code>head.next = null</code> 断开原来的正向链接，防止出现环。</p>
+    <p style="margin-top:12px; color:#94a3b8">举例：处理节点 4 时，4.next 是 5，让 5.next = 4（反转），再让 4.next = null（断开）。</p>
+  </div>
+</div>
+
+<!-- 关键提醒 -->
+<h2>关键提醒</h2>
+<div class="card-yellow">
+  <p><strong>链表题的核心就是"画图"。</strong></p>
+  <p style="margin-top:8px; font-size:14px">面试时一定要在纸上画出节点和指针的变化过程，不要只在脑子里想。每一步操作后，箭头指向哪里、哪些链断了，画清楚就不容易出错。</p>
+</div>
+
+<!-- 今晚练习 -->
+<div class="tonight">
+  <h3>今晚练习</h3>
+  <ul style="padding-left:20px; font-size:14px; line-height:2">
+    <li><strong>迭代版</strong>：5 分钟盲写，写到闭着眼都能写出来</li>
+    <li><strong>递归版</strong>：理解思路即可，能口述过程就行</li>
+  </ul>
+</div>
+
+<!-- 导航 -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="042-trapping-rain-water.html">← 接雨水</a>
+  <a class="btn-nav primary" href="#">下一题 →</a>
+</div>
+
+<script>
+function toggleStep(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function toggleExpandable(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function checkQuiz1(n) {
+  const result = document.getElementById('quiz1-result');
+  result.classList.remove('hidden');
+  if (n === 3) {
+    result.className = 'think-result correct';
+    result.innerHTML = '<p><strong>正确！需要 3 个指针：</strong></p>' +
+      '<ul style="padding-left:20px; margin-top:8px">' +
+      '<li><strong style="color:#c084fc">prev</strong> —— 已反转部分的头节点</li>' +
+      '<li><strong style="color:#38bdf8">curr</strong> —— 当前正在处理的节点</li>' +
+      '<li><strong style="color:#fbbf24">next</strong> —— 暂存下一个节点，防止断链</li>' +
+      '</ul>';
+  } else {
+    result.className = 'think-result';
+    result.style.background = '#451a03';
+    result.style.border = '1px solid #d97706';
+    result.innerHTML = '<p>再想想？改 curr.next 之后，怎么继续遍历下一个节点？</p>' +
+      '<p style="margin-top:8px; color:#94a3b8">提示：如果直接改 curr.next = prev，原来的 curr.next 就丢了……</p>';
+  }
+}
+
+function showQuiz2() {
+  document.getElementById('quiz2-result').classList.remove('hidden');
+  document.getElementById('quiz2-result').className = 'think-result correct';
+}
+</script>
+
+</body>
+</html>

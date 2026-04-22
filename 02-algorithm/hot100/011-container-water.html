@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#11 盛最多水的容器 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 15px; margin: 16px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-medium { background: #854d0e; color: #fbbf24; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  /* Progress bar */
+  .progress-bar {
+    background: #1e293b;
+    border-radius: 8px;
+    height: 8px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+    height: 100%;
+    border-radius: 8px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Score */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .score-val { color: #38bdf8; font-weight: bold; font-size: 16px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .diagram-img {
+    width: 100%;
+    max-width: 500px;
+    display: block;
+    margin: 16px auto;
+    border-radius: 8px;
+  }
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+  .btn-correct { background: #059669; color: white; }
+  .btn-wrong { background: #dc2626; color: white; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+  .think-result.wrong { background: #451a03; border: 1px solid #d97706; }
+
+  /* Simulation */
+  .sim {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+  }
+  .sim-row {
+    display: flex;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px solid #1e293b;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .sim-row:last-child { border-bottom: none; }
+  .sim-label { color: #94a3b8; min-width: 60px; }
+  .sim-val { color: #38bdf8; }
+  .sim-map { color: #34d399; }
+  .sim-found { color: #fbbf24; font-weight: bold; }
+
+  .pattern-box {
+    background: #1a2332;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  .pattern-title {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .complexity-table th,
+  .complexity-table td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+  }
+  .complexity-table th {
+    color: #94a3b8;
+    font-weight: normal;
+    font-size: 12px;
+  }
+  .complexity-table td { color: #38bdf8; font-weight: bold; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; }
+
+  .compare-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .compare-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .compare-item h4 {
+    color: #38bdf8;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .compare-item p {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  .compare-item .tag {
+    display: inline-block;
+    background: #334155;
+    color: #7dd3fc;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Score & Progress -->
+<div class="score-bar">
+  <span>学习进度</span>
+  <span>得分：<span class="score-val" id="score">0</span> / 2</span>
+</div>
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<h1>#11 盛最多水的容器 <span class="tag-medium">Medium</span></h1>
+<p class="subtitle">Hot 100 · 双指针 · 第1周</p>
+
+<!-- Diagram -->
+<h2>图示</h2>
+<div class="card">
+  <img class="diagram-img" src="../../assets/container-water.png" alt="盛最多水的容器示意图">
+</div>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给定 <code>n</code> 个非负整数 <code>a1, a2, ..., an</code>，每个数代表坐标中的一个点 <code>(i, ai)</code>。画 <code>n</code> 条垂直线，找出其中两条线，使得它们与 x 轴共同构成的容器可以盛最多的水。</p>
+  <pre><code>输入：height = [<span class="hl-num">1, 8, 6, 2, 5, 4, 8, 3, 7</span>]
+输出：<span class="hl-num">49</span>
+解释：选择下标 1 和 8 的两条线（高度 8 和 7），宽度 = 7
+     面积 = min(8, 7) × 7 = <span class="hl-num">49</span></code></pre>
+</div>
+
+<!-- Quiz 1: 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="think1">
+  <p style="margin-bottom:12px">暴力法是 O(n²)，如何优化到 O(n)？</p>
+  <button class="btn btn-primary" onclick="showThink(1)">我想好了</button>
+  <div class="think-result hidden" id="think1-result">
+    <p><strong>双指针对撞：</strong>左右两端各一个指针，向中间移动。</p>
+    <p style="margin-top:8px">每次移动较短的那个指针，因为移动较长的一侧面积只会变小或不变，没有意义。</p>
+    <p style="margin-top:8px; color:#38bdf8">这样只需要遍历一遍，时间复杂度 O(n)。</p>
+  </div>
+</div>
+
+<!-- Quiz 2: 核心问题（选择题） -->
+<h2>核心问题</h2>
+<div class="think-box" id="think2">
+  <p style="margin-bottom:16px; font-size:15px"><strong>为什么要移动较短的指针？</strong></p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkThink2('a')">a) 随便移都行</button>
+    <button class="btn btn-secondary" onclick="checkThink2('b')">b) 移动短的，面积可能变大</button>
+    <button class="btn btn-secondary" onclick="checkThink2('c')">c) 移动长的，面积一定变大</button>
+  </div>
+  <div class="think-result hidden" id="think2-result"></div>
+</div>
+
+<!-- 解法步骤 -->
+<h2>双指针解法（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 初始化双指针</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p><code>left = 0</code>（最左端），<code>right = height.length - 1</code>（最右端）。</p>
+      <p style="margin-top:8px">初始宽度最大，之后每移动一步宽度减 1。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 计算当前面积</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>面积 = <code>宽 × 高</code> = <code>(right - left) × Math.min(height[left], height[right])</code></p>
+      <p style="margin-top:8px">每次都和 <code>maxWater</code> 取较大值。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 移动较短指针</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>如果 <code>height[left] < height[right]</code>，移动 <code>left++</code>；否则 <code>right--</code>。</p>
+      <div class="key-point" style="margin-top:12px">
+        <strong>关键证明：</strong>移动较长指针 → 宽减小，高 = min(两边) 不变或变小 → 面积一定变小。<br>
+        移动较短指针 → 宽减小，但高可能变大 → 面积有可能变大。
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">4</span> 模拟执行过程</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p><code>height = [1, 8, 6, 2, 5, 4, 8, 3, 7]</code></p>
+      <div class="sim">
+        <div class="sim-row">
+          <span class="sim-label">L=0 R=8</span>
+          <span>h=[<span class="hl-num">1</span>,...,<span class="hl-num">7</span>]</span>
+          <span class="sim-val">min(1,7)×8 = 8</span>
+          <span class="sim-map">移动L (1<7)</span>
+        </div>
+        <div class="sim-row">
+          <span class="sim-label">L=1 R=8</span>
+          <span>h=[<span class="hl-num">8</span>,...,<span class="hl-num">7</span>]</span>
+          <span class="sim-found">min(8,7)×7 = 49</span>
+          <span class="sim-map">移动R (8>7)</span>
+        </div>
+        <div class="sim-row">
+          <span class="sim-label">L=1 R=7</span>
+          <span>h=[<span class="hl-num">8</span>,...,<span class="hl-num">3</span>]</span>
+          <span class="sim-val">min(8,3)×6 = 18</span>
+          <span class="sim-map">移动R (8>3)</span>
+        </div>
+        <div class="sim-row">
+          <span class="sim-label">L=1 R=6</span>
+          <span>h=[<span class="hl-num">8</span>,...,<span class="hl-num">8</span>]</span>
+          <span class="sim-val">min(8,8)×5 = 40</span>
+          <span class="sim-map">移动R (相等)</span>
+        </div>
+        <div class="sim-row">
+          <span class="sim-label">...</span>
+          <span colspan="3" style="color:#94a3b8">继续直到 L >= R，最终 maxWater = <span class="sim-found">49</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">5</span> 完整代码</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <pre><code><span class="hl-key">function</span> <span class="hl-fn">maxArea</span>(height) {
+  <span class="hl-key">let</span> left = <span class="hl-num">0</span>, right = height.length - <span class="hl-num">1</span>
+  <span class="hl-key">let</span> maxWater = <span class="hl-num">0</span>
+  <span class="hl-key">while</span> (left < right) {
+    <span class="hl-key">const</span> w = right - left
+    <span class="hl-key">const</span> h = <span class="hl-fn">Math.min</span>(height[left], height[right])
+    maxWater = <span class="hl-fn">Math.max</span>(maxWater, w * h)
+    <span class="hl-key">if</span> (height[left] < height[right]) {
+      left++
+    } <span class="hl-key">else</span> {
+      right--
+    }
+  }
+  <span class="hl-key">return</span> maxWater
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 复杂度 -->
+<h2>复杂度分析</h2>
+<div class="card">
+  <table class="complexity-table">
+    <tr><th>维度</th><th>复杂度</th><th>说明</th></tr>
+    <tr>
+      <td style="color:#e2e8f0; font-weight:normal">时间</td>
+      <td>O(n)</td>
+      <td style="color:#94a3b8; font-weight:normal">左右指针各走一遍，总共 n 步</td>
+    </tr>
+    <tr>
+      <td style="color:#e2e8f0; font-weight:normal">空间</td>
+      <td>O(1)</td>
+      <td style="color:#94a3b8; font-weight:normal">只用了几个变量</td>
+    </tr>
+  </table>
+</div>
+
+<!-- 对比 #283 -->
+<h2>对比 #283 移动零</h2>
+<div class="compare-box">
+  <div class="compare-item">
+    <h4>#283 移动零</h4>
+    <p>快慢指针（同向）</p>
+    <p style="margin-top:6px; font-size:12px">两个指针从同一端出发<br>slow 记录位置，fast 扫描</p>
+    <span class="tag">同向双指针</span>
+  </div>
+  <div class="compare-item">
+    <h4>#11 盛水容器</h4>
+    <p>对撞指针（相向）</p>
+    <p style="margin-top:6px; font-size:12px">两个指针从两端出发<br>向中间收缩</p>
+    <span class="tag">对撞双指针</span>
+  </div>
+</div>
+<div class="key-point">
+  <strong>双指针的两大模式你都学到了！</strong><br>
+  同向指针：用于分区、去重、滑动窗口<br>
+  对撞指针：用于有序搜索、区间收缩
+</div>
+
+<!-- 今晚任务 -->
+<div class="tonight">
+  <h3>今晚练习要求</h3>
+  <ol style="padding-left:20px; margin-top:8px;">
+    <li>关掉这个页面，打开 LeetCode #11</li>
+    <li>自己手写双指针解法</li>
+    <li>目标：<strong>8 分钟内</strong>写完并 AC</li>
+    <li>如果卡住了，回来看第 3 步（移动较短指针的原因），然后关掉重写</li>
+  </ol>
+</div>
+
+<!-- Navigation -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="283-move-zeroes.html">&larr; 移动零</a>
+  <a class="btn-nav primary" href="#">下一题 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuiz = 2
+let answered = { q1: false, q2: false }
+
+function updateScore() {
+  document.getElementById('score').textContent = score
+  const pct = (score / totalQuiz) * 100
+  document.getElementById('progress').style.width = pct + '%'
+}
+
+function toggleStep(header) {
+  const body = header.nextElementSibling
+  const arrow = header.querySelector('.step-arrow')
+  body.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function showThink(n) {
+  document.getElementById('think' + n + '-result').classList.remove('hidden')
+  if (n === 1 && !answered.q1) {
+    answered.q1 = true
+    score++
+    updateScore()
+  }
+}
+
+function checkThink2(answer) {
+  const result = document.getElementById('think2-result')
+  result.classList.remove('hidden')
+
+  if (answer === 'b') {
+    result.className = 'think-result correct'
+    result.innerHTML = '<strong>正确！</strong>' +
+      '面积 = 宽 × min(L, R)。<br><br>' +
+      '<strong>移动长的：</strong>宽变小，高 = min(两边) 不变或变小 → 面积<em>一定</em>变小。<br>' +
+      '<strong>移动短的：</strong>宽变小，但高可能变大 → 面积<em>可能</em>变大。<br><br>' +
+      '所以只有移动短的才有机会找到更大的面积。'
+    if (!answered.q2) {
+      answered.q2 = true
+      score++
+      updateScore()
+    }
+  } else if (answer === 'a') {
+    result.className = 'think-result wrong'
+    result.innerHTML = '<strong>不对。</strong>不是随便移的。移动长的那边面积一定变小，等于白移。只有移动短的才可能找到更大面积。'
+  } else {
+    result.className = 'think-result wrong'
+    result.innerHTML = '<strong>不对。</strong>移动长的指针后，高度取决于 min(两边)，而短的那边没变，所以高不变或变小。宽还减小了，面积一定变小，不是变大。'
+  }
+
+  // Disable buttons
+  document.querySelectorAll('#think2 .btn-secondary').forEach(btn => {
+    btn.disabled = true
+    btn.style.opacity = '0.5'
+  })
+}
+</script>
+</body>
+</html>

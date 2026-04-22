@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#49 字母异位词分组 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 15px; margin: 16px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-medium { background: #713f12; color: #fbbf24; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    transition: width 0.3s;
+    z-index: 100;
+  }
+
+  /* Score counter */
+  .score-box {
+    position: fixed;
+    top: 12px;
+    right: 20px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #94a3b8;
+    z-index: 100;
+  }
+  .score-box span { color: #38bdf8; font-weight: bold; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .diagram-img {
+    width: 100%;
+    border-radius: 8px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz / Think box */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+  .btn-correct { background: #059669; color: white; }
+  .btn-wrong { background: #dc2626; color: white; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+  .think-result.wrong { background: #451a03; border: 1px solid #d97706; }
+
+  .pattern-box {
+    background: #1a2332;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  .pattern-title {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .complexity-table th,
+  .complexity-table td {
+    padding: 8px 12px;
+    border: 1px solid #334155;
+    text-align: left;
+  }
+  .complexity-table th {
+    background: #1e3a5f;
+    color: #7dd3fc;
+  }
+  .complexity-table td {
+    background: #1e293b;
+  }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; }
+
+  /* Collapsible code */
+  .code-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: #7dd3fc;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .code-toggle:hover { background: #334155; }
+  .code-content {
+    display: none;
+    margin-top: -4px;
+    border: 1px solid #334155;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+  }
+  .code-content.open { display: block; }
+  .code-content pre { margin: 0; border-radius: 0 0 8px 8px; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="score-box">得分：<span id="score">0</span> / 2</div>
+
+<h1>#49 字母异位词分组 <span class="tag-medium">Medium</span></h1>
+<p class="subtitle">Hot 100 · 哈希表 · 第1周</p>
+
+<!-- Diagram -->
+<img class="diagram-img" src="../../assets/group-anagrams.png" alt="字母异位词分组示意图">
+
+<!-- 题目描述 -->
+<h2>题目描述</h2>
+<div class="card">
+  <p>给定一个字符串数组 <code>strs</code>，将所有 <strong>字母异位词</strong> 组合在一起。可以按任意顺序返回结果。</p>
+  <p style="margin-top:8px; color:#94a3b8;">字母异位词是由重新排列源单词的所有字母得到的新单词。</p>
+  <pre><code>输入：strs = [<span class="hl-str">"eat"</span>, <span class="hl-str">"tea"</span>, <span class="hl-str">"tan"</span>, <span class="hl-str">"ate"</span>, <span class="hl-str">"nat"</span>, <span class="hl-str">"bat"</span>]
+输出：[[<span class="hl-str">"bat"</span>], [<span class="hl-str">"nat"</span>, <span class="hl-str">"tan"</span>], [<span class="hl-str">"ate"</span>, <span class="hl-str">"eat"</span>, <span class="hl-str">"tea"</span>]]</code></pre>
+</div>
+
+<!-- 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="quiz1">
+  <p style="margin-bottom:12px">如何判断两个单词是异位词？</p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkQuiz1('a')">a) 排序后比较</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1('b')">b) 计数26个字母</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1('c')">c) 两种都可以</button>
+  </div>
+  <div class="think-result hidden" id="quiz1-result"></div>
+</div>
+
+<!-- 思路分析 -->
+<h2>思路分析（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 遍历每个单词，排序得到 key</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>对每个单词的字母进行排序，排序后的结果就是这组异位词的「身份标识」。</p>
+      <p style="margin-top:8px">例如：<code><span class="hl-str">"eat"</span></code>、<code><span class="hl-str">"tea"</span></code>、<code><span class="hl-str">"ate"</span></code> 排序后都变成 <code><span class="hl-str">"aet"</span></code>。</p>
+      <pre><code><span class="hl-str">"eat"</span>.split(<span class="hl-str">''</span>).sort().join(<span class="hl-str">''</span>)  <span class="hl-cmt">// → "aet"</span>
+<span class="hl-str">"tea"</span>.split(<span class="hl-str">''</span>).sort().join(<span class="hl-str">''</span>)  <span class="hl-cmt">// → "aet"</span>
+<span class="hl-str">"tan"</span>.split(<span class="hl-str">''</span>).sort().join(<span class="hl-str">''</span>)  <span class="hl-cmt">// → "ant"</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 用 Map 存储：key → [原始单词列表]</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>使用哈希表 <code>Map</code>，以排序后的字符串为 key，原始单词数组为 value。</p>
+      <div style="background:#0f172a; border-radius:8px; padding:16px; margin:12px 0; font-family:'Courier New',monospace; font-size:14px;">
+        <div style="padding:4px 0; border-bottom:1px solid #1e293b;">
+          <span style="color:#94a3b8;">处理 "eat"：</span>
+          <span style="color:#38bdf8;">key="aet"</span> →
+          <span style="color:#34d399;">Map { "aet": ["eat"] }</span>
+        </div>
+        <div style="padding:4px 0; border-bottom:1px solid #1e293b;">
+          <span style="color:#94a3b8;">处理 "tea"：</span>
+          <span style="color:#38bdf8;">key="aet"</span> →
+          <span style="color:#34d399;">Map { "aet": ["eat","tea"] }</span>
+        </div>
+        <div style="padding:4px 0; border-bottom:1px solid #1e293b;">
+          <span style="color:#94a3b8;">处理 "tan"：</span>
+          <span style="color:#38bdf8;">key="ant"</span> →
+          <span style="color:#34d399;">Map { "aet": ["eat","tea"], "ant": ["tan"] }</span>
+        </div>
+        <div style="padding:4px 0; border-bottom:1px solid #1e293b;">
+          <span style="color:#94a3b8;">处理 "ate"：</span>
+          <span style="color:#38bdf8;">key="aet"</span> →
+          <span style="color:#34d399;">Map { "aet": ["eat","tea","ate"], "ant": ["tan"] }</span>
+        </div>
+        <div style="padding:4px 0; border-bottom:1px solid #1e293b;">
+          <span style="color:#94a3b8;">处理 "nat"：</span>
+          <span style="color:#38bdf8;">key="ant"</span> →
+          <span style="color:#34d399;">Map { "aet": [...], "ant": ["tan","nat"] }</span>
+        </div>
+        <div style="padding:4px 0;">
+          <span style="color:#94a3b8;">处理 "bat"：</span>
+          <span style="color:#38bdf8;">key="abt"</span> →
+          <span style="color:#34d399;">Map { "aet": [...], "ant": [...], "abt": ["bat"] }</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 返回 Map 的所有 values</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>Map 的每个 value 就是一组异位词。用 <code>[...map.values()]</code> 即可收集所有分组。</p>
+      <pre><code><span class="hl-key">return</span> [...map.<span class="hl-fn">values</span>()]
+<span class="hl-cmt">// → [["eat","tea","ate"], ["tan","nat"], ["bat"]]</span></code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 完整代码 -->
+<h2>完整代码</h2>
+<button class="code-toggle" onclick="toggleCode(this)">
+  <span>点击展开/收起代码</span>
+  <span class="step-arrow">▶</span>
+</button>
+<div class="code-content" id="codeBlock">
+  <pre><code><span class="hl-key">function</span> <span class="hl-fn">groupAnagrams</span>(strs) {
+  <span class="hl-key">const</span> map = <span class="hl-key">new</span> <span class="hl-fn">Map</span>()
+  <span class="hl-key">for</span> (<span class="hl-key">const</span> str <span class="hl-key">of</span> strs) {
+    <span class="hl-key">const</span> key = str.<span class="hl-fn">split</span>(<span class="hl-str">''</span>).<span class="hl-fn">sort</span>().<span class="hl-fn">join</span>(<span class="hl-str">''</span>)
+    <span class="hl-key">if</span> (!map.<span class="hl-fn">has</span>(key)) map.<span class="hl-fn">set</span>(key, [])
+    map.<span class="hl-fn">get</span>(key).<span class="hl-fn">push</span>(str)
+  }
+  <span class="hl-key">return</span> [...map.<span class="hl-fn">values</span>()]
+}</code></pre>
+</div>
+
+<!-- 复杂度 -->
+<h2>复杂度分析</h2>
+<div class="card">
+  <table class="complexity-table">
+    <tr>
+      <th>维度</th>
+      <th>复杂度</th>
+      <th>说明</th>
+    </tr>
+    <tr>
+      <td>时间</td>
+      <td><code>O(n * k log k)</code></td>
+      <td>n 个字符串，每个长度 k，排序 O(k log k)</td>
+    </tr>
+    <tr>
+      <td>空间</td>
+      <td><code>O(n * k)</code></td>
+      <td>Map 存储所有字符串</td>
+    </tr>
+  </table>
+  <p style="margin-top:8px; color:#94a3b8; font-size:13px;">其中 n = 数组长度，k = 最长字符串的长度</p>
+</div>
+
+<!-- 进阶思考 -->
+<h2>进阶思考</h2>
+<div class="think-box" id="quiz2">
+  <p style="margin-bottom:12px">如果不用排序，还有什么方法做 key？</p>
+  <button class="btn btn-primary" onclick="showQuiz2()">看答案</button>
+  <div class="think-result hidden" id="quiz2-result">
+    <p><strong>用26个字母的计数作为 key！</strong></p>
+    <p style="margin-top:8px">例如 <code><span class="hl-str">"eat"</span></code> 可以编码为 <code><span class="hl-str">"1#0#0#0#1#...#1#0#..."</span></code>（a 出现 1 次，e 出现 1 次，t 出现 1 次）。</p>
+    <pre><code><span class="hl-key">function</span> <span class="hl-fn">groupAnagrams</span>(strs) {
+  <span class="hl-key">const</span> map = <span class="hl-key">new</span> <span class="hl-fn">Map</span>()
+  <span class="hl-key">for</span> (<span class="hl-key">const</span> str <span class="hl-key">of</span> strs) {
+    <span class="hl-key">const</span> count = <span class="hl-key">new</span> <span class="hl-fn">Array</span>(<span class="hl-num">26</span>).<span class="hl-fn">fill</span>(<span class="hl-num">0</span>)
+    <span class="hl-key">for</span> (<span class="hl-key">const</span> c <span class="hl-key">of</span> str) {
+      count[c.<span class="hl-fn">charCodeAt</span>(<span class="hl-num">0</span>) - <span class="hl-num">97</span>]++
+    }
+    <span class="hl-key">const</span> key = count.<span class="hl-fn">join</span>(<span class="hl-str">'#'</span>)
+    <span class="hl-key">if</span> (!map.<span class="hl-fn">has</span>(key)) map.<span class="hl-fn">set</span>(key, [])
+    map.<span class="hl-fn">get</span>(key).<span class="hl-fn">push</span>(str)
+  }
+  <span class="hl-key">return</span> [...map.<span class="hl-fn">values</span>()]
+}</code></pre>
+    <p style="margin-top:8px">这样时间复杂度变为 <code>O(n * k)</code>，省去了排序的 <code>O(k log k)</code>。</p>
+  </div>
+</div>
+
+<!-- 套路总结 -->
+<h2>套路总结</h2>
+<div class="pattern-box">
+  <div class="pattern-title">通用模式：哈希表分组</div>
+  <p><strong>哈希表分组是一个通用模式，key 的设计是关键。</strong></p>
+  <ul style="padding-left:20px; margin-top:8px; font-size:14px;">
+    <li>本题的 key：排序后的字符串（或字母计数编码）</li>
+    <li>核心套路：遍历 → 计算 key → 按 key 归类</li>
+    <li>同类题目：按某种规则对数据分组时，都可以考虑哈希表</li>
+  </ul>
+</div>
+
+<!-- 今晚练习 -->
+<div class="tonight">
+  <h3>今晚练习要求（禁止用 AI）</h3>
+  <ol style="padding-left:20px; margin-top:8px;">
+    <li>关掉这个页面</li>
+    <li>打开 LeetCode，自己手写排序 + Map 解法</li>
+    <li>目标：<strong>8 分钟内</strong>写完并 AC</li>
+    <li>AC 之后，再尝试用计数法做一遍（进阶解法）</li>
+    <li>如果卡住了，回来看思路分析的第2步模拟过程，然后再关掉重写</li>
+  </ol>
+</div>
+
+<!-- Bottom nav -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="001-two-sum.html">&larr; 两数之和</a>
+  <a class="btn-nav primary" href="128-longest-consecutive.html">下一题：最长连续序列 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuizzes = 2
+
+function updateScore() {
+  document.getElementById('score').textContent = score
+  const pct = (score / totalQuizzes) * 100
+  document.getElementById('progressBar').style.width = pct + '%'
+}
+
+function toggleStep(header) {
+  const body = header.nextElementSibling
+  const arrow = header.querySelector('.step-arrow')
+  body.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function toggleCode(btn) {
+  const block = document.getElementById('codeBlock')
+  const arrow = btn.querySelector('.step-arrow')
+  block.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function checkQuiz1(answer) {
+  const result = document.getElementById('quiz1-result')
+  result.classList.remove('hidden')
+
+  if (answer === 'c') {
+    result.className = 'think-result correct'
+    result.innerHTML = '<strong>正确！+1分</strong><br>两种方法都可以判断异位词。排序后比较更简单直观，代码量少；计数法在字符串很长时性能更好（O(k) vs O(k log k)）。实际面试中，先写排序法，再提计数法作为优化，是最佳策略。'
+    score++
+    updateScore()
+  } else if (answer === 'a') {
+    result.className = 'think-result wrong'
+    result.innerHTML = '<strong>不完全对。</strong>排序后比较确实可行，但计数法也可以。两种都是有效方法，答案应选 c。'
+  } else {
+    result.className = 'think-result wrong'
+    result.innerHTML = '<strong>不完全对。</strong>计数26个字母确实可行，但排序法也可以。两种都是有效方法，答案应选 c。'
+  }
+
+  document.querySelectorAll('#quiz1 .btn-secondary').forEach(btn => {
+    btn.disabled = true
+    btn.style.opacity = '0.5'
+  })
+}
+
+function showQuiz2() {
+  const result = document.getElementById('quiz2-result')
+  if (result.classList.contains('hidden')) {
+    result.classList.remove('hidden')
+    result.className = 'think-result correct'
+    score++
+    updateScore()
+    document.querySelector('#quiz2 .btn-primary').textContent = '已查看'
+    document.querySelector('#quiz2 .btn-primary').disabled = true
+    document.querySelector('#quiz2 .btn-primary').style.opacity = '0.5'
+  }
+}
+
+// Scroll progress
+window.addEventListener('scroll', function() {
+  if (score < totalQuizzes) return  // only fill from quiz score
+})
+</script>
+</body>
+</html>

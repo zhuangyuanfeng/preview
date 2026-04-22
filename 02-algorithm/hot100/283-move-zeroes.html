@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#283 移动零 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 15px; margin: 16px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-easy { background: #065f46; color: #34d399; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .diagram-img {
+    width: 100%;
+    border-radius: 8px;
+    margin: 16px 0;
+  }
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* 步骤展示 */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* 思考题 */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+  .btn-correct { background: #059669; color: white; }
+  .btn-wrong { background: #dc2626; color: white; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+  .think-result.wrong { background: #451a03; border: 1px solid #d97706; }
+  .think-result.info { background: #1e3a5f; border: 1px solid #38bdf8; }
+
+  .pattern-box {
+    background: #1a2332;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  .pattern-title {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; }
+
+  /* 进度条 & 计分 */
+  .progress-bar {
+    background: #334155;
+    border-radius: 8px;
+    height: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  .score-val { color: #38bdf8; font-weight: bold; }
+
+  .complexity-card {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+  }
+  .complexity-item {
+    flex: 1;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .complexity-label { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+  .complexity-value { font-size: 20px; color: #38bdf8; font-weight: bold; font-family: 'Courier New', monospace; }
+
+  /* 模拟表格 */
+  .sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 12px 0;
+  }
+  .sim-table th {
+    background: #334155;
+    color: #7dd3fc;
+    padding: 8px 10px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #475569;
+  }
+  .sim-table td {
+    padding: 8px 10px;
+    text-align: center;
+    border: 1px solid #334155;
+    font-family: 'Courier New', monospace;
+  }
+  .sim-table tr:nth-child(even) { background: #1e293b; }
+  .sim-table tr:nth-child(odd) { background: #172033; }
+  .sim-highlight { color: #38bdf8; font-weight: bold; }
+  .sim-swap { color: #34d399; font-weight: bold; }
+  .sim-skip { color: #64748b; }
+</style>
+</head>
+<body>
+
+<h1>#283 移动零 <span class="tag-easy">Easy</span></h1>
+<p class="subtitle">Hot 100 · 双指针 · 第1周</p>
+
+<!-- 进度条 -->
+<div class="score-bar">
+  <span>学习进度</span>
+  <span>得分：<span class="score-val" id="score">0</span> / 3</span>
+</div>
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<!-- 图示 -->
+<img class="diagram-img" src="../../assets/move-zeroes.png" alt="移动零示意图">
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给定一个数组 <code>nums</code>，编写一个函数将所有 <strong>0</strong> 移动到数组的<strong>末尾</strong>，同时保持非零元素的相对顺序。</p>
+  <p style="margin-top:8px; color:#fbbf24; font-weight:bold;">要求：必须在原地操作，不能拷贝额外数组。</p>
+  <pre><code>输入：nums = [<span class="hl-num">0, 1, 0, 3, 12</span>]
+输出：[<span class="hl-num">1, 3, 12, 0, 0</span>]</code></pre>
+</div>
+
+<!-- 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="think1">
+  <p style="margin-bottom:12px">最简单的思路是什么？</p>
+  <button class="btn btn-primary" onclick="revealThink(1)">看答案</button>
+  <div class="think-result info hidden" id="think1-result">
+    <p>最容易想到的是：<strong>新建一个数组</strong>，先把非零元素按顺序放进去，再在末尾补零。</p>
+    <p style="margin-top:8px">但题目要求<strong>原地操作</strong>，不能用额外数组。</p>
+    <p style="margin-top:8px">所以我们需要 —— <strong>双指针</strong>：一个指针管"该放哪"，一个指针管"去找谁"。</p>
+  </div>
+</div>
+
+<!-- 思路 -->
+<h2>思路（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> slow 指针：下一个非零元素该放的位置</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p><code>slow</code> 从 0 开始，它始终指向"下一个非零元素应该放置的位置"。</p>
+      <p style="margin-top:8px"><code>slow</code> 左边的所有元素（<code>[0, slow)</code>）都是已经排好的非零元素。</p>
+      <div class="key-point" style="margin-top:8px">
+        <code>slow</code> 就像一个"安置员"，只负责接收非零元素。
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> fast 指针：遍历数组找非零元素</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p><code>fast</code> 从 0 开始，逐一扫描每个元素。</p>
+      <p style="margin-top:8px">它就像一个"侦察兵"，负责在数组中找到非零元素，然后交给 <code>slow</code>。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 遇到非零：swap(slow, fast)，slow++</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>当 <code>fast</code> 找到一个非零元素时：</p>
+      <ol style="padding-left:20px; margin-top:8px;">
+        <li>将 <code>nums[slow]</code> 和 <code>nums[fast]</code> 交换</li>
+        <li><code>slow++</code>，准备接收下一个非零元素</li>
+      </ol>
+      <pre><code><span class="hl-cmt">// 交换操作</span>
+[nums[slow], nums[fast]] = [nums[fast], nums[slow]]
+slow++</code></pre>
+      <div class="key-point" style="margin-top:8px">
+        交换保证了非零元素被放到前面，零被"推"到后面。
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">4</span> fast 继续前进，直到遍历完整个数组</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>无论是否交换，<code>fast</code> 每一轮都 <code>++</code>。</p>
+      <p style="margin-top:8px">遇到 0 就跳过（只有 <code>fast++</code>），遇到非零就交换并推进两个指针。</p>
+      <p style="margin-top:8px">当 <code>fast</code> 到达数组末尾，所有非零元素都已经被交换到前面，剩下的自然是零。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 模拟执行过程 -->
+<h2>模拟执行过程</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:4px;">输入：<code>[0, 1, 0, 3, 12]</code></p>
+<div class="card" style="overflow-x:auto;">
+  <table class="sim-table">
+    <thead>
+      <tr>
+        <th>步骤</th>
+        <th>fast</th>
+        <th>slow</th>
+        <th>nums[fast]</th>
+        <th>操作</th>
+        <th>数组状态</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>初始</td>
+        <td>-</td>
+        <td>0</td>
+        <td>-</td>
+        <td>-</td>
+        <td>[0, 1, 0, 3, 12]</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="sim-skip">0</td>
+        <td class="sim-skip">跳过（是零）</td>
+        <td>[0, 1, 0, 3, 12]</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>1</td>
+        <td>0</td>
+        <td class="sim-highlight">1</td>
+        <td class="sim-swap">swap(0,1), slow++</td>
+        <td>[<span class="sim-swap">1</span>, <span class="sim-swap">0</span>, 0, 3, 12]</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>2</td>
+        <td>1</td>
+        <td class="sim-skip">0</td>
+        <td class="sim-skip">跳过（是零）</td>
+        <td>[1, 0, 0, 3, 12]</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>3</td>
+        <td>1</td>
+        <td class="sim-highlight">3</td>
+        <td class="sim-swap">swap(1,3), slow++</td>
+        <td>[1, <span class="sim-swap">3</span>, 0, <span class="sim-swap">0</span>, 12]</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>4</td>
+        <td>2</td>
+        <td class="sim-highlight">12</td>
+        <td class="sim-swap">swap(2,4), slow++</td>
+        <td>[1, 3, <span class="sim-swap">12</span>, 0, <span class="sim-swap">0</span>]</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="key-point" style="margin-top:12px;">
+    最终结果：<code>[1, 3, 12, 0, 0]</code> &mdash; 非零元素相对顺序不变，零全部移到末尾。
+  </div>
+</div>
+
+<!-- 完整代码 -->
+<h2>完整代码</h2>
+<div class="card">
+  <pre><code><span class="hl-key">function</span> <span class="hl-fn">moveZeroes</span>(nums) {
+  <span class="hl-key">let</span> slow = <span class="hl-num">0</span>
+  <span class="hl-key">for</span> (<span class="hl-key">let</span> fast = <span class="hl-num">0</span>; fast &lt; nums.length; fast++) {
+    <span class="hl-key">if</span> (nums[fast] !== <span class="hl-num">0</span>) {
+      [nums[slow], nums[fast]] = [nums[fast], nums[slow]]
+      slow++
+    }
+  }
+}</code></pre>
+</div>
+
+<!-- 复杂度 -->
+<h2>复杂度分析</h2>
+<div class="complexity-card">
+  <div class="complexity-item">
+    <div class="complexity-label">时间复杂度</div>
+    <div class="complexity-value">O(n)</div>
+  </div>
+  <div class="complexity-item">
+    <div class="complexity-label">空间复杂度</div>
+    <div class="complexity-value">O(1)</div>
+  </div>
+</div>
+<div class="key-point">
+  只用了一次遍历（<code>fast</code> 从头走到尾），没有嵌套循环。<code>slow</code> 和 <code>fast</code> 都只往前走，不回头。额外空间只用了两个指针变量。
+</div>
+
+<!-- 套路总结 -->
+<h2>套路总结</h2>
+<div class="pattern-box">
+  <div class="pattern-title">双指针入门模板</div>
+  <div class="key-point" style="margin-top:8px; font-size:15px;">
+    <strong>"一个管位置，一个管遍历"</strong>
+  </div>
+  <ul style="padding-left:20px; margin-top:12px; font-size:14px; line-height:2">
+    <li><strong>slow（管位置）</strong> &mdash; 指向"结果数组"的下一个空位</li>
+    <li><strong>fast（管遍历）</strong> &mdash; 负责扫描原数组，寻找符合条件的元素</li>
+    <li>找到目标元素 &rarr; 放到 slow 位置 &rarr; slow 前进</li>
+    <li>同类题：#26 删除有序数组中的重复项、#27 移除元素</li>
+  </ul>
+</div>
+
+<!-- 巩固quiz -->
+<h2>巩固一下</h2>
+<div class="think-box" id="think2">
+  <p style="margin-bottom:12px">如果数组是 <code>[1, 2, 3]</code>（没有零），这个算法会出错吗？</p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkQuiz('correct')">不会，正常运行</button>
+    <button class="btn btn-secondary" onclick="checkQuiz('wrong')">会出错</button>
+  </div>
+  <div class="think-result hidden" id="think2-result"></div>
+</div>
+
+<!-- 今晚练习 -->
+<div class="tonight">
+  <h3>今晚练习</h3>
+  <ol style="padding-left:20px; margin-top:8px;">
+    <li>关掉这个页面</li>
+    <li>打开 LeetCode #283，自己手写双指针解法</li>
+    <li>目标：<strong>5 分钟内</strong>写完并 AC</li>
+    <li>关键回忆点：slow 管位置 + fast 管遍历 + 非零就 swap</li>
+  </ol>
+</div>
+
+<!-- 导航 -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="128-longest-consecutive.html">&larr; 最长连续序列</a>
+  <a class="btn-nav primary" href="011-container-water.html">下一题：盛水容器 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuestions = 3
+
+function updateScore() {
+  score++
+  document.getElementById('score').textContent = score
+  document.getElementById('progress').style.width = (score / totalQuestions * 100) + '%'
+}
+
+function toggleStep(header) {
+  const body = header.nextElementSibling
+  const arrow = header.querySelector('.step-arrow')
+  body.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function revealThink(n) {
+  const result = document.getElementById('think' + n + '-result')
+  if (result.classList.contains('hidden')) {
+    result.classList.remove('hidden')
+    updateScore()
+  }
+}
+
+function checkQuiz(answer) {
+  const result = document.getElementById('think2-result')
+  if (!result.classList.contains('hidden')) return
+
+  result.classList.remove('hidden')
+
+  if (answer === 'correct') {
+    result.className = 'think-result correct'
+    result.innerHTML = '<strong>正确！</strong>当没有零时，<code>slow</code> 和 <code>fast</code> 始终同步前进（因为每个元素都非零）。交换 <code>nums[slow]</code> 和 <code>nums[fast]</code> 时 <code>slow === fast</code>，相当于自己和自己交换，数组不变。算法完全正确。'
+    updateScore()
+  } else {
+    result.className = 'think-result wrong'
+    result.innerHTML = '<strong>不会出错。</strong>没有零时，每个元素都满足 <code>!== 0</code>，所以每次都执行交换。但因为 <code>slow</code> 和 <code>fast</code> 始终相等，交换的是同一个位置，数组不变。这是双指针的一个优雅之处：不需要特殊处理边界情况。'
+  }
+
+  document.querySelectorAll('#think2 .btn-secondary').forEach(btn => {
+    btn.disabled = true
+    btn.style.opacity = '0.5'
+  })
+}
+
+// 页面加载完自动给一个基础分
+document.addEventListener('DOMContentLoaded', function() {
+  updateScore()
+})
+</script>
+</body>
+</html>

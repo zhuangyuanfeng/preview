@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#128 最长连续序列 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 15px; margin: 16px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-medium { background: #854d0e; color: #fbbf24; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .diagram-img {
+    width: 100%;
+    border-radius: 8px;
+    margin: 16px 0;
+  }
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* 步骤展示 */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* 思考题 */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+  .btn-correct { background: #059669; color: white; }
+  .btn-wrong { background: #dc2626; color: white; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+  .think-result.wrong { background: #451a03; border: 1px solid #d97706; }
+  .think-result.info { background: #1e3a5f; border: 1px solid #38bdf8; }
+
+  .pattern-box {
+    background: #1a2332;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  .pattern-title {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; }
+
+  /* 进度条 & 计分 */
+  .progress-bar {
+    background: #334155;
+    border-radius: 8px;
+    height: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  .score-val { color: #38bdf8; font-weight: bold; }
+
+  .complexity-card {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+  }
+  .complexity-item {
+    flex: 1;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .complexity-label { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+  .complexity-value { font-size: 20px; color: #38bdf8; font-weight: bold; font-family: 'Courier New', monospace; }
+</style>
+</head>
+<body>
+
+<h1>#128 最长连续序列 <span class="tag-medium">Medium</span></h1>
+<p class="subtitle">Hot 100 · 哈希表 · 第1周</p>
+
+<!-- 进度条 -->
+<div class="score-bar">
+  <span>学习进度</span>
+  <span>得分：<span class="score-val" id="score">0</span> / 3</span>
+</div>
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<!-- 图示 -->
+<img class="diagram-img" src="../../assets/longest-consecutive.png" alt="最长连续序列示意图">
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给定一个<strong>未排序</strong>的整数数组 <code>nums</code>，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。</p>
+  <p style="margin-top:8px; color:#fbbf24; font-weight:bold;">要求：时间复杂度 O(n)</p>
+  <pre><code>输入：nums = [<span class="hl-num">100, 4, 200, 1, 3, 2</span>]
+输出：<span class="hl-num">4</span>
+解释：最长连续序列是 [<span class="hl-num">1, 2, 3, 4</span>]，长度为 4</code></pre>
+</div>
+
+<!-- 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="think1">
+  <p style="margin-bottom:12px">为什么不能排序？</p>
+  <button class="btn btn-primary" onclick="revealThink(1)">看答案</button>
+  <div class="think-result info hidden" id="think1-result">
+    <p>排序的时间复杂度是 <strong>O(n log n)</strong>，而题目要求 <strong>O(n)</strong>。</p>
+    <p style="margin-top:8px">所以我们需要一种不排序就能找到连续序列的方法 — <strong>哈希表</strong>。</p>
+  </div>
+</div>
+
+<!-- 思路 -->
+<h2>思路（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 把所有数字放入 Set</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>用 <code>new Set(nums)</code> 把数组去重并存入 Set。</p>
+      <p style="margin-top:8px">Set 的 <code>has()</code> 查找是 <strong>O(1)</strong> 的，这是关键。</p>
+      <pre><code><span class="hl-key">const</span> set = <span class="hl-key">new</span> <span class="hl-fn">Set</span>(nums)
+<span class="hl-cmt">// Set: {100, 4, 200, 1, 3, 2}</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 遍历 Set，找序列起点</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>怎么判断一个数是序列的<strong>起点</strong>？</p>
+      <div class="key-point" style="margin-top:8px">
+        如果 <code>num - 1</code> 不在 Set 中，那 <code>num</code> 就是某个连续序列的起点。
+      </div>
+      <p style="margin-top:8px">比如对 <code>[100, 4, 200, 1, 3, 2]</code>：</p>
+      <ul style="padding-left:20px; margin-top:8px; font-size:14px;">
+        <li><code>1</code> → <code>0</code> 不在 Set → 是起点</li>
+        <li><code>2</code> → <code>1</code> 在 Set → 不是起点，跳过</li>
+        <li><code>3</code> → <code>2</code> 在 Set → 不是起点，跳过</li>
+        <li><code>4</code> → <code>3</code> 在 Set → 不是起点，跳过</li>
+        <li><code>100</code> → <code>99</code> 不在 Set → 是起点</li>
+        <li><code>200</code> → <code>199</code> 不在 Set → 是起点</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 从起点开始往后数</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>找到起点后，依次检查 <code>num+1</code>、<code>num+2</code>... 是否在 Set 中，记录长度。</p>
+      <pre><code><span class="hl-cmt">// 起点 num = 1</span>
+<span class="hl-num">1</span> → set.has(<span class="hl-num">2</span>) ✓ → len=<span class="hl-num">2</span>
+<span class="hl-num">2</span> → set.has(<span class="hl-num">3</span>) ✓ → len=<span class="hl-num">3</span>
+<span class="hl-num">3</span> → set.has(<span class="hl-num">4</span>) ✓ → len=<span class="hl-num">4</span>
+<span class="hl-num">4</span> → set.has(<span class="hl-num">5</span>) ✗ → 停止，长度=<span class="hl-num">4</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">4</span> 更新最长长度</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>每次从起点数完后，用 <code>Math.max</code> 更新全局最长长度。</p>
+      <pre><code>maxLen = <span class="hl-fn">Math.max</span>(maxLen, len)
+<span class="hl-cmt">// 起点100: len=1, maxLen=1</span>
+<span class="hl-cmt">// 起点1:   len=4, maxLen=4</span>
+<span class="hl-cmt">// 起点200: len=1, maxLen=4</span>
+<span class="hl-cmt">// 最终结果：4</span></code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 为什么要找起点 -->
+<h2>为什么要找起点？</h2>
+<div class="think-box" id="think2">
+  <p style="margin-bottom:12px">如果不找起点，直接对每个数都往后数，会怎样？</p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkQuiz('fast')">还是 O(n)</button>
+    <button class="btn btn-secondary" onclick="checkQuiz('slow')">会变慢</button>
+  </div>
+  <div class="think-result hidden" id="think2-result"></div>
+</div>
+
+<!-- 完整代码 -->
+<h2>完整代码</h2>
+<div class="card">
+  <pre><code><span class="hl-key">function</span> <span class="hl-fn">longestConsecutive</span>(nums) {
+  <span class="hl-key">const</span> set = <span class="hl-key">new</span> <span class="hl-fn">Set</span>(nums)
+  <span class="hl-key">let</span> maxLen = <span class="hl-num">0</span>
+
+  <span class="hl-key">for</span> (<span class="hl-key">const</span> num <span class="hl-key">of</span> set) {
+    <span class="hl-key">if</span> (!set.<span class="hl-fn">has</span>(num - <span class="hl-num">1</span>)) {  <span class="hl-cmt">// 是起点</span>
+      <span class="hl-key">let</span> current = num
+      <span class="hl-key">let</span> len = <span class="hl-num">1</span>
+
+      <span class="hl-key">while</span> (set.<span class="hl-fn">has</span>(current + <span class="hl-num">1</span>)) {
+        current++
+        len++
+      }
+
+      maxLen = <span class="hl-fn">Math.max</span>(maxLen, len)
+    }
+  }
+
+  <span class="hl-key">return</span> maxLen
+}</code></pre>
+</div>
+
+<!-- 复杂度 -->
+<h2>复杂度分析</h2>
+<div class="complexity-card">
+  <div class="complexity-item">
+    <div class="complexity-label">时间复杂度</div>
+    <div class="complexity-value">O(n)</div>
+  </div>
+  <div class="complexity-item">
+    <div class="complexity-label">空间复杂度</div>
+    <div class="complexity-value">O(n)</div>
+  </div>
+</div>
+<div class="key-point">
+  虽然代码里有 <code>for</code> + <code>while</code> 两层循环，看起来像 O(n²)，但实际上<strong>每个数字最多只被访问 2 次</strong>：一次在 for 循环判断是否是起点，一次在 while 循环中被延伸到。所以总时间仍然是 O(n)。
+</div>
+
+<!-- 套路总结 -->
+<h2>套路总结</h2>
+<div class="pattern-box">
+  <div class="pattern-title">核心套路</div>
+  <ul style="padding-left:20px; margin-top:8px; font-size:14px; line-height:2">
+    <li><strong>Set 判断存在性 O(1)</strong> — 需要快速判断某个值是否存在时，用 Set</li>
+    <li><strong>"找起点再延伸"</strong> — 避免重复计算的经典技巧，保证每个元素只处理常数次</li>
+    <li><strong>空间换时间</strong> — 用 O(n) 空间的 Set 把查找从 O(n) 降到 O(1)</li>
+  </ul>
+</div>
+
+<!-- 今晚练习 -->
+<div class="tonight">
+  <h3>今晚练习（禁止用 AI）</h3>
+  <ol style="padding-left:20px; margin-top:8px;">
+    <li>关掉这个页面</li>
+    <li>打开 LeetCode #128，自己手写 Set 解法</li>
+    <li>目标：<strong>10 分钟内</strong>写完并 AC</li>
+    <li>关键回忆点：Set + 找起点（num-1 不在 Set）+ while 延伸</li>
+  </ol>
+</div>
+
+<!-- 导航 -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="049-group-anagrams.html">&larr; 字母异位词分组</a>
+  <a class="btn-nav primary" href="283-move-zeroes.html">下一题：移动零 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuestions = 3
+
+function updateScore() {
+  score++
+  document.getElementById('score').textContent = score
+  document.getElementById('progress').style.width = (score / totalQuestions * 100) + '%'
+}
+
+function toggleStep(header) {
+  const body = header.nextElementSibling
+  const arrow = header.querySelector('.step-arrow')
+  body.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function revealThink(n) {
+  const result = document.getElementById('think' + n + '-result')
+  if (result.classList.contains('hidden')) {
+    result.classList.remove('hidden')
+    updateScore()
+  }
+}
+
+function checkQuiz(answer) {
+  const result = document.getElementById('think2-result')
+  if (!result.classList.contains('hidden')) return
+
+  result.classList.remove('hidden')
+
+  if (answer === 'slow') {
+    result.className = 'think-result correct'
+    result.innerHTML = '<strong>正确！</strong>如果不找起点，遇到 <code>2</code> 也会数 <code>2→3→4</code>，遇到 <code>1</code> 又会数 <code>1→2→3→4</code>，产生大量重复计算。最坏情况时间复杂度退化到 <strong>O(n²)</strong>。找起点保证每个序列只从头数一次。'
+    updateScore()
+  } else {
+    result.className = 'think-result wrong'
+    result.innerHTML = '<strong>不对。</strong>不找起点的话，比如 <code>[1,2,3,4]</code>，遇到 <code>2</code> 会数 <code>2,3,4</code>（3次），遇到 <code>3</code> 会数 <code>3,4</code>（2次），遇到 <code>1</code> 会数 <code>1,2,3,4</code>（4次），总操作变成 O(n²)。找起点后每个数最多被访问2次，才是真正的 O(n)。'
+  }
+
+  document.querySelectorAll('#think2 .btn-secondary').forEach(btn => {
+    btn.disabled = true
+    btn.style.opacity = '0.5'
+  })
+}
+
+// 页面加载完 自动给一个基础分（打开页面就算学习了）
+document.addEventListener('DOMContentLoaded', function() {
+  updateScore()
+})
+</script>
+</body>
+</html>

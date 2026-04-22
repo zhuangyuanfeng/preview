@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#3 无重复字符的最长子串 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  h3 { color: #bae6fd; font-size: 15px; margin: 16px 0 8px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-medium { background: #854d0e; color: #fbbf24; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  /* Progress bar */
+  .progress-bar {
+    background: #1e293b;
+    border-radius: 8px;
+    height: 8px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+    height: 100%;
+    border-radius: 8px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Score */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .score-val { color: #38bdf8; font-weight: bold; font-size: 16px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .diagram-img {
+    width: 100%;
+    max-width: 500px;
+    display: block;
+    margin: 16px auto;
+    border-radius: 8px;
+  }
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+  .think-result.info { background: #1e3a5f; border: 1px solid #38bdf8; }
+
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .complexity-table th,
+  .complexity-table td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+  }
+  .complexity-table th {
+    color: #94a3b8;
+    font-weight: normal;
+    font-size: 12px;
+  }
+  .complexity-table td { color: #38bdf8; font-weight: bold; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; }
+
+  .compare-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .compare-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .compare-item h4 {
+    color: #38bdf8;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .compare-item p {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  .compare-item .tag {
+    display: inline-block;
+    background: #334155;
+    color: #7dd3fc;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Score & Progress -->
+<div class="score-bar">
+  <span>学习进度</span>
+  <span>得分：<span class="score-val" id="score">0</span> / 2</span>
+</div>
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<h1>#3 无重复字符的最长子串 <span class="tag-medium">Medium</span></h1>
+<p class="subtitle">Hot 100 · 滑动窗口 · 第2周</p>
+
+<!-- Diagram -->
+<h2>图示</h2>
+<div class="card">
+  <img class="diagram-img" src="../../assets/longest-substring.png" alt="无重复字符的最长子串示意图">
+</div>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给定一个字符串 <code>s</code>，请你找出其中不含有重复字符的<strong>最长子串</strong>的长度。</p>
+  <pre><code>输入：s = <span class="hl-str">"abcabcbb"</span>
+输出：<span class="hl-num">3</span>
+解释：无重复字符的最长子串是 <span class="hl-str">"abc"</span>，长度为 <span class="hl-num">3</span></code></pre>
+</div>
+
+<!-- Quiz 1: 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="think1">
+  <p style="margin-bottom:12px">暴力法怎么做？为什么不好？</p>
+  <button class="btn btn-primary" onclick="showThink(1)">看看答案</button>
+  <div class="think-result hidden" id="think1-result">
+    <p><strong>暴力法：</strong>枚举所有子串 O(n²)，每个子串检查是否有重复字符 O(n)。</p>
+    <p style="margin-top:8px">总时间复杂度 <strong>O(n³)</strong>，太慢了！</p>
+    <p style="margin-top:8px; color:#38bdf8">我们需要滑动窗口，把复杂度降到 O(n)。</p>
+  </div>
+</div>
+
+<!-- 滑动窗口核心思想 -->
+<h2>滑动窗口核心思想</h2>
+<div class="card">
+  <div class="key-point">
+    维护一个窗口 <code>[left, right]</code>，<strong>right 不断右移</strong>扩大窗口；遇到重复字符就 <strong>left 右移</strong>缩小窗口，直到窗口内无重复。每一步都更新最大长度。
+  </div>
+</div>
+
+<!-- 解法步骤 -->
+<h2>思路（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 用 Set 记录窗口内的字符</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>创建一个 <code>Set</code>，用来存储当前窗口 <code>[left, right]</code> 内的所有字符。</p>
+      <p style="margin-top:8px">Set 的 <code>has()</code> 和 <code>delete()</code> 都是 O(1)，非常适合做"是否重复"的判断。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> right 右移，字符加入 Set</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>用 <code>for</code> 循环让 <code>right</code> 从 0 遍历到 <code>s.length - 1</code>。</p>
+      <p style="margin-top:8px">每次循环尝试把 <code>s[right]</code> 加入窗口。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 如果新字符已在 Set 中 → left 右移</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>如果 <code>s[right]</code> 已经在 Set 中，说明窗口内有重复了。</p>
+      <p style="margin-top:8px">此时需要不断把 <code>s[left]</code> 从 Set 中删除，并 <code>left++</code>，直到窗口内没有 <code>s[right]</code> 这个字符。</p>
+      <div class="key-point" style="margin-top:12px">
+        <strong>关键：</strong>用 <code>while</code> 循环逐个删除，因为重复的字符不一定在 left 位置，可能在中间。
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">4</span> 每步更新 maxLen</span>
+      <span class="step-arrow">&#9654;</span>
+    </div>
+    <div class="step-body">
+      <p>窗口调整完成后，当前窗口长度为 <code>right - left + 1</code>。</p>
+      <p style="margin-top:8px"><code>maxLen = Math.max(maxLen, right - left + 1)</code></p>
+      <p style="margin-top:12px; color:#94a3b8">例如 <code>"abcabcbb"</code>：</p>
+      <pre style="font-size:13px"><code><span class="hl-cmt">// right=0: set={a}         maxLen=1</span>
+<span class="hl-cmt">// right=1: set={a,b}       maxLen=2</span>
+<span class="hl-cmt">// right=2: set={a,b,c}     maxLen=3</span>
+<span class="hl-cmt">// right=3: s[3]='a'重复! left移到1 → set={b,c,a} maxLen=3</span>
+<span class="hl-cmt">// right=4: s[4]='b'重复! left移到2 → set={c,a,b} maxLen=3</span>
+<span class="hl-cmt">// ... 最终返回 3</span></code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Code -->
+<h2>完整代码</h2>
+<pre><code><span class="hl-key">function</span> <span class="hl-fn">lengthOfLongestSubstring</span>(s) {
+  <span class="hl-key">const</span> set = <span class="hl-key">new</span> <span class="hl-fn">Set</span>()
+  <span class="hl-key">let</span> left = <span class="hl-num">0</span>, maxLen = <span class="hl-num">0</span>
+  <span class="hl-key">for</span> (<span class="hl-key">let</span> right = <span class="hl-num">0</span>; right < s.length; right++) {
+    <span class="hl-key">while</span> (set.<span class="hl-fn">has</span>(s[right])) {
+      set.<span class="hl-fn">delete</span>(s[left])
+      left++
+    }
+    set.<span class="hl-fn">add</span>(s[right])
+    maxLen = <span class="hl-fn">Math.max</span>(maxLen, right - left + <span class="hl-num">1</span>)
+  }
+  <span class="hl-key">return</span> maxLen
+}</code></pre>
+
+<!-- 复杂度 -->
+<h2>复杂度分析</h2>
+<div class="card">
+  <table class="complexity-table">
+    <tr><th>维度</th><th>复杂度</th><th>说明</th></tr>
+    <tr>
+      <td style="color:#e2e8f0; font-weight:normal">时间</td>
+      <td>O(n)</td>
+      <td style="color:#94a3b8; font-weight:normal">left 和 right 各最多移动 n 次，总共 2n</td>
+    </tr>
+    <tr>
+      <td style="color:#e2e8f0; font-weight:normal">空间</td>
+      <td>O(min(m, n))</td>
+      <td style="color:#94a3b8; font-weight:normal">m 为字符集大小，Set 最多存 m 个字符</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Quiz 2: 进阶 -->
+<h2>进阶思考</h2>
+<div class="think-box" id="think2">
+  <p style="margin-bottom:12px">用 Map 代替 Set 可以更快吗？</p>
+  <button class="btn btn-primary" onclick="showThink(2)">看看答案</button>
+  <div class="think-result hidden" id="think2-result">
+    <p><strong>可以！</strong>用 Map 存 <code>{字符 → 最后出现位置}</code>。</p>
+    <p style="margin-top:8px">遇到重复字符时，直接把 <code>left</code> 跳到<strong>重复位置 + 1</strong>，不需要 while 循环逐个删除。</p>
+    <pre style="margin-top:8px"><code><span class="hl-key">function</span> <span class="hl-fn">lengthOfLongestSubstring</span>(s) {
+  <span class="hl-key">const</span> map = <span class="hl-key">new</span> <span class="hl-fn">Map</span>()
+  <span class="hl-key">let</span> left = <span class="hl-num">0</span>, maxLen = <span class="hl-num">0</span>
+  <span class="hl-key">for</span> (<span class="hl-key">let</span> right = <span class="hl-num">0</span>; right < s.length; right++) {
+    <span class="hl-key">if</span> (map.<span class="hl-fn">has</span>(s[right]) && map.<span class="hl-fn">get</span>(s[right]) >= left) {
+      left = map.<span class="hl-fn">get</span>(s[right]) + <span class="hl-num">1</span>
+    }
+    map.<span class="hl-fn">set</span>(s[right], right)
+    maxLen = <span class="hl-fn">Math.max</span>(maxLen, right - left + <span class="hl-num">1</span>)
+  }
+  <span class="hl-key">return</span> maxLen
+}</code></pre>
+    <p style="margin-top:8px; color:#38bdf8">虽然都是 O(n)，但 Map 版本省去了 while 循环，常数更小。</p>
+  </div>
+</div>
+
+<!-- 滑动窗口模板总结 -->
+<h2>滑动窗口模板总结</h2>
+<div class="card">
+  <div class="key-point">
+    <strong>通用模板三步走：</strong><br>
+    1. <strong>right 扩</strong> —— 右指针右移，扩大窗口<br>
+    2. <strong>条件不满足 left 缩</strong> —— 左指针右移，缩小窗口直到条件满足<br>
+    3. <strong>每步更新答案</strong> —— 更新最大/最小值
+  </div>
+  <p style="margin-top:12px; font-size:14px; color:#94a3b8">这是所有滑动窗口题的通用模板，记住这三步就能解决大部分滑动窗口问题。</p>
+</div>
+
+<!-- 套路对比 -->
+<h2>套路对比</h2>
+<div class="compare-box">
+  <div class="compare-item">
+    <h4>#3 最长子串</h4>
+    <p>可变长度窗口</p>
+    <p style="margin-top:6px; font-size:12px">窗口大小不固定<br>根据条件动态伸缩</p>
+    <span class="tag">可变窗口</span>
+  </div>
+  <div class="compare-item">
+    <h4>#438 字母异位词</h4>
+    <p>固定长度窗口</p>
+    <p style="margin-top:6px; font-size:12px">窗口大小 = 目标串长度<br>每次右移1步左也移1步</p>
+    <span class="tag">固定窗口</span>
+  </div>
+</div>
+<div class="key-point">
+  <strong>滑动窗口两大类型：</strong><br>
+  可变窗口：求最大/最小满足条件的子串（如本题）<br>
+  固定窗口：窗口大小已知，滑动检查每个位置（如 #438）
+</div>
+
+<!-- 今晚任务 -->
+<div class="tonight">
+  <h3>今晚练习要求</h3>
+  <ol style="padding-left:20px; margin-top:8px;">
+    <li>关掉这个页面，打开 LeetCode #3</li>
+    <li>自己手写滑动窗口解法（Set 版本）</li>
+    <li>目标：<strong>10 分钟内</strong>写完并 AC</li>
+    <li>AC 后再试试 Map 优化版本</li>
+    <li>如果卡住了，回来看第 3 步，然后关掉重写</li>
+  </ol>
+</div>
+
+<!-- Navigation -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="011-container-water.html">&larr; 盛水容器</a>
+  <a class="btn-nav primary" href="438-find-anagrams.html">下一题：找到所有字母异位词 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuiz = 2
+let answered = { q1: false, q2: false }
+
+function updateScore() {
+  document.getElementById('score').textContent = score
+  const pct = (score / totalQuiz) * 100
+  document.getElementById('progress').style.width = pct + '%'
+}
+
+function toggleStep(header) {
+  const body = header.nextElementSibling
+  const arrow = header.querySelector('.step-arrow')
+  body.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function showThink(n) {
+  document.getElementById('think' + n + '-result').classList.remove('hidden')
+  if (n === 1 && !answered.q1) {
+    answered.q1 = true
+    score++
+    updateScore()
+  }
+  if (n === 2 && !answered.q2) {
+    answered.q2 = true
+    score++
+    updateScore()
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#42 接雨水 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-hard { background: #991b1b; color: #fca5a5; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  /* Progress bar */
+  .progress-bar {
+    background: #1e293b;
+    border-radius: 8px;
+    height: 8px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+    height: 100%;
+    border-radius: 8px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Score */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .score-val { color: #38bdf8; font-weight: bold; font-size: 16px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+
+  .diagram-placeholder {
+    width: 100%;
+    max-width: 500px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px auto;
+    border-radius: 8px;
+    background: #1a2332;
+    border: 2px dashed #475569;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Collapsible sections */
+  .collapsible {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  .collapsible-header {
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-weight: 500;
+  }
+  .collapsible-header:hover { background: #334155; }
+  .collapsible-arrow { color: #64748b; transition: transform 0.2s; }
+  .collapsible-arrow.open { transform: rotate(90deg); }
+  .collapsible-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .collapsible-body.open { display: block; }
+
+  .complexity-badge {
+    display: inline-block;
+    background: #334155;
+    color: #7dd3fc;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin: 4px 4px 4px 0;
+  }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+  .think-result.wrong { background: #451a03; border: 1px solid #d97706; }
+
+  .compare-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .compare-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .compare-item h4 {
+    color: #38bdf8;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .compare-item p {
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  .compare-item .tag {
+    display: inline-block;
+    background: #334155;
+    color: #7dd3fc;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+</style>
+</head>
+<body>
+
+<!-- Score & Progress -->
+<div class="score-bar">
+  <span>学习进度</span>
+  <span>得分：<span class="score-val" id="score">0</span> / 2</span>
+</div>
+<div class="progress-bar">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<h1>#42 接雨水 <span class="tag-hard">Hard</span></h1>
+<p class="subtitle">Hot 100 &middot; 双指针 &middot; 第2周</p>
+
+<!-- Diagram -->
+<h2>图示</h2>
+<div class="card" style="padding:0;overflow:hidden;border:none;">
+  <img src="../../assets/trapping-rain-water.png" alt="接雨水" style="width:100%;height:auto;display:block;border-radius:12px;" />
+</div>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给定 <code>n</code> 个非负整数表示每个宽度为 <code>1</code> 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。</p>
+  <pre><code>输入：height = [<span class="hl-num">0,1,0,2,1,0,1,3,2,1,2,1</span>]
+输出：<span class="hl-num">6</span>
+解释：上面的柱子高度由数组表示，在这种情况下，
+     可以接 <span class="hl-num">6</span> 个单位的雨水</code></pre>
+</div>
+
+<!-- 为什么是 Hard -->
+<h2>为什么是 Hard？</h2>
+<div class="card">
+  <p>和 <strong>#11 盛最多水的容器</strong>看起来很像，但本质不同：</p>
+  <div class="compare-box" style="margin-top: 12px;">
+    <div class="compare-item">
+      <h4>#11 盛水容器</h4>
+      <p>找<strong>两条线</strong>围成的最大面积</p>
+      <p style="margin-top:6px; font-size:12px">只看两条边，中间无障碍</p>
+      <span class="tag">Medium</span>
+    </div>
+    <div class="compare-item">
+      <h4>#42 接雨水</h4>
+      <p><strong>多个柱子</strong>之间填水，逐位置计算</p>
+      <p style="margin-top:6px; font-size:12px">每个位置的水量受左右最高柱子约束</p>
+      <span class="tag">Hard</span>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz 1: 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="quiz1">
+  <p style="margin-bottom:16px; font-size:15px"><strong>每个位置能接多少水取决于什么？</strong></p>
+  <button class="btn btn-primary" onclick="showQuiz1()">看答案</button>
+  <div class="think-result hidden" id="quiz1-result">
+    <p>取决于该位置<strong>左边最高柱子</strong>和<strong>右边最高柱子</strong>中<strong>较矮</strong>的那个，减去当前高度。</p>
+    <div class="key-point" style="margin-top:12px">
+      <code>water[i] = min(leftMax, rightMax) - height[i]</code>
+    </div>
+    <p style="margin-top:8px; color:#94a3b8">这就是"木桶原理"——水位由最短板决定。</p>
+  </div>
+</div>
+
+<!-- 方法1: 预计算数组 -->
+<h2>方法1：预计算数组（容易理解）</h2>
+<div class="collapsible">
+  <div class="collapsible-header" onclick="toggleCollapsible(this)">
+    <span>展开查看代码与讲解</span>
+    <span class="collapsible-arrow">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+    <p style="margin-bottom:12px">思路：分别预计算每个位置的 <code>leftMax</code> 和 <code>rightMax</code> 数组，然后逐位置求水量。</p>
+    <pre><code><span class="hl-key">function</span> <span class="hl-fn">trap</span>(height) {
+  <span class="hl-key">const</span> n = height.length
+  <span class="hl-key">const</span> leftMax = <span class="hl-key">new</span> <span class="hl-fn">Array</span>(n)
+  <span class="hl-key">const</span> rightMax = <span class="hl-key">new</span> <span class="hl-fn">Array</span>(n)
+
+  <span class="hl-cmt">// 从左往右，记录每个位置左侧的最大值</span>
+  leftMax[<span class="hl-num">0</span>] = height[<span class="hl-num">0</span>]
+  <span class="hl-key">for</span> (<span class="hl-key">let</span> i = <span class="hl-num">1</span>; i < n; i++)
+    leftMax[i] = <span class="hl-fn">Math.max</span>(leftMax[i-<span class="hl-num">1</span>], height[i])
+
+  <span class="hl-cmt">// 从右往左，记录每个位置右侧的最大值</span>
+  rightMax[n-<span class="hl-num">1</span>] = height[n-<span class="hl-num">1</span>]
+  <span class="hl-key">for</span> (<span class="hl-key">let</span> i = n-<span class="hl-num">2</span>; i >= <span class="hl-num">0</span>; i--)
+    rightMax[i] = <span class="hl-fn">Math.max</span>(rightMax[i+<span class="hl-num">1</span>], height[i])
+
+  <span class="hl-cmt">// 每个位置的水量 = min(leftMax, rightMax) - height[i]</span>
+  <span class="hl-key">let</span> water = <span class="hl-num">0</span>
+  <span class="hl-key">for</span> (<span class="hl-key">let</span> i = <span class="hl-num">0</span>; i < n; i++)
+    water += <span class="hl-fn">Math.min</span>(leftMax[i], rightMax[i]) - height[i]
+
+  <span class="hl-key">return</span> water
+}</code></pre>
+    <div style="margin-top:12px">
+      <span class="complexity-badge">时间 O(n)</span>
+      <span class="complexity-badge">空间 O(n)</span>
+    </div>
+    <p style="margin-top:12px; color:#94a3b8; font-size:13px">三次遍历，使用两个额外数组。逻辑清晰，适合理解核心思路。</p>
+  </div>
+</div>
+
+<!-- 方法2: 双指针 -->
+<h2>方法2：双指针（最优）</h2>
+<div class="collapsible">
+  <div class="collapsible-header" onclick="toggleCollapsible(this)">
+    <span>展开查看代码与讲解</span>
+    <span class="collapsible-arrow">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+    <p style="margin-bottom:12px">思路：用左右两个指针从两端向中间逼近，同时维护 <code>leftMax</code> 和 <code>rightMax</code>，不需要额外数组。</p>
+    <pre><code><span class="hl-key">function</span> <span class="hl-fn">trap</span>(height) {
+  <span class="hl-key">let</span> left = <span class="hl-num">0</span>, right = height.length - <span class="hl-num">1</span>
+  <span class="hl-key">let</span> leftMax = <span class="hl-num">0</span>, rightMax = <span class="hl-num">0</span>
+  <span class="hl-key">let</span> water = <span class="hl-num">0</span>
+
+  <span class="hl-key">while</span> (left < right) {
+    <span class="hl-key">if</span> (height[left] < height[right]) {
+      leftMax = <span class="hl-fn">Math.max</span>(leftMax, height[left])
+      water += leftMax - height[left]
+      left++
+    } <span class="hl-key">else</span> {
+      rightMax = <span class="hl-fn">Math.max</span>(rightMax, height[right])
+      water += rightMax - height[right]
+      right--
+    }
+  }
+
+  <span class="hl-key">return</span> water
+}</code></pre>
+    <div style="margin-top:12px">
+      <span class="complexity-badge">时间 O(n)</span>
+      <span class="complexity-badge">空间 O(1)</span>
+    </div>
+    <p style="margin-top:12px; color:#94a3b8; font-size:13px">一次遍历，只用常数空间。面试首选方案。</p>
+  </div>
+</div>
+
+<!-- Quiz 2: 双指针原理 -->
+<h2>深入理解</h2>
+<div class="think-box" id="quiz2">
+  <p style="margin-bottom:16px; font-size:15px"><strong>双指针为什么能保证正确？移动较矮一侧的原理是什么？</strong></p>
+  <button class="btn btn-primary" onclick="showQuiz2()">看答案</button>
+  <div class="think-result hidden" id="quiz2-result">
+    <p>如果 <code>height[left] < height[right]</code>，那么 <code>left</code> 位置的水量<strong>只取决于 leftMax</strong>。</p>
+    <p style="margin-top:8px">为什么？因为右边一定有一个柱子（至少是 <code>height[right]</code>）比 <code>leftMax</code> 高或相等，所以 <code>rightMax >= height[right] >= leftMax</code>。</p>
+    <div class="key-point" style="margin-top:12px">
+      <code>min(leftMax, rightMax) = leftMax</code>（因为 rightMax 一定更大）<br>
+      所以可以安全地计算 <code>left</code> 位置的水量：<code>leftMax - height[left]</code>
+    </div>
+    <p style="margin-top:8px; color:#94a3b8">反之亦然。这就是为什么每次移动较矮一侧不会漏算。</p>
+  </div>
+</div>
+
+<!-- 和 #11 对比 -->
+<h2>和 #11 盛水容器对比</h2>
+<div class="card">
+  <div class="compare-box">
+    <div class="compare-item">
+      <h4>#11 盛水容器</h4>
+      <p>计算<strong>面积</strong>（宽 x 高）</p>
+      <p style="margin-top:6px; font-size:12px">两条线之间的矩形面积<br>一次性算出</p>
+      <span class="tag">对撞双指针</span>
+    </div>
+    <div class="compare-item">
+      <h4>#42 接雨水</h4>
+      <p>计算<strong>每个位置的水量之和</strong></p>
+      <p style="margin-top:6px; font-size:12px">逐位置累加<br>water[i] = min(L,R) - h[i]</p>
+      <span class="tag">对撞双指针</span>
+    </div>
+  </div>
+  <div class="key-point" style="margin-top:12px">
+    <strong>共同点：</strong>都是对撞双指针 + 移动较短侧。<br>
+    <strong>不同点：</strong>#11 计算的是面积（宽 x 高），#42 计算的是每个位置的水量之和。
+  </div>
+</div>
+
+<!-- 今晚练习 -->
+<div class="tonight">
+  <h3>今晚练习</h3>
+  <ol style="padding-left:20px; margin-top:8px;">
+    <li>先理解<strong>预计算版本</strong>（方法1），画图验证每个位置的 leftMax / rightMax</li>
+    <li>再挑战<strong>双指针版本</strong>（方法2），理解为什么移动较矮侧</li>
+    <li>目标：<strong>15 分钟内</strong>手写双指针版本并 AC</li>
+    <li>如果卡住了，回来看"深入理解"部分，然后关掉重写</li>
+  </ol>
+</div>
+
+<!-- Navigation -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="#">&larr; Promise.all</a>
+  <a class="btn-nav primary" href="206-reverse-linked-list.html">下一题：反转链表 &rarr;</a>
+</div>
+
+<script>
+let score = 0
+const totalQuiz = 2
+let answered = { q1: false, q2: false }
+
+function updateScore() {
+  document.getElementById('score').textContent = score
+  const pct = (score / totalQuiz) * 100
+  document.getElementById('progress').style.width = pct + '%'
+}
+
+function toggleCollapsible(header) {
+  const body = header.nextElementSibling
+  const arrow = header.querySelector('.collapsible-arrow')
+  body.classList.toggle('open')
+  arrow.classList.toggle('open')
+}
+
+function showQuiz1() {
+  document.getElementById('quiz1-result').classList.remove('hidden')
+  document.getElementById('quiz1-result').classList.add('correct')
+  if (!answered.q1) {
+    answered.q1 = true
+    score++
+    updateScore()
+  }
+}
+
+function showQuiz2() {
+  document.getElementById('quiz2-result').classList.remove('hidden')
+  document.getElementById('quiz2-result').classList.add('correct')
+  if (!answered.q2) {
+    answered.q2 = true
+    score++
+    updateScore()
+  }
+}
+</script>
+</body>
+</html>
