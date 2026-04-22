@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#160 相交链表 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-easy { background: #065f46; color: #6ee7b7; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .card-yellow {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 2px solid #eab308;
+  }
+  .card-yellow strong { color: #facc15; }
+
+  .image-placeholder {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 40px 20px;
+    margin: 16px 0;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+
+  /* Simulation table */
+  .sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+  }
+  .sim-table th {
+    background: #334155;
+    color: #94a3b8;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 2px solid #475569;
+  }
+  .sim-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #1e293b;
+    vertical-align: top;
+  }
+  .sim-table tr:hover { background: #1e293b; }
+  .sim-table .val-prev { color: #c084fc; }
+  .sim-table .val-curr { color: #38bdf8; }
+  .sim-table .val-next { color: #fbbf24; }
+  .sim-table .val-chain { color: #34d399; }
+  .sim-table .row-final { background: #064e3b; }
+  .sim-table .row-final td { border-bottom: none; }
+
+  /* Expandable code */
+  .expandable {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  .expandable-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .expandable-header:hover { background: #334155; }
+  .expandable-body {
+    display: none;
+    padding: 0 16px 16px;
+  }
+  .expandable-body.open { display: block; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; font-size: 15px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<h1>#160 相交链表 <span class="tag-easy">Easy</span></h1>
+<p class="subtitle">Hot 100 · 链表 · 第3周</p>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给你两个单链表的头节点 headA 和 headB，请你找出并返回两个单链表相交的起始节点。如果没有相交节点，返回 null。</p>
+  <pre><code>A:     <span class="hl-num">4</span> → <span class="hl-num">1</span> ↘
+                  <span class="hl-num">8</span> → <span class="hl-num">4</span> → <span class="hl-num">5</span>
+B: <span class="hl-num">5</span> → <span class="hl-num">6</span> → <span class="hl-num">1</span> ↗
+相交于节点 <span class="hl-num">8</span></code></pre>
+</div>
+
+<!-- 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="quiz1">
+  <p style="margin-bottom:12px">两个链表长度不同，怎么让两个指针同时到达相交点？</p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkQuiz1('len')">先算长度差</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1('swap')">A走完走B，B走完走A</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1('both')">两种都行</button>
+  </div>
+  <div class="think-result hidden" id="quiz1-result"></div>
+</div>
+
+<!-- 思路 -->
+<h2>关键洞察</h2>
+<div class="card">
+  <p><strong style="color:#38bdf8">交替遍历法：</strong></p>
+  <p style="margin-top:8px; font-size:14px">pA 走完 A 链表后走 B，pB 走完 B 链表后走 A，这样两个指针走的总路程相同（a+b），一定在交点相遇。如果没有交点，两个都会同时到 null。</p>
+</div>
+
+<!-- 思路步骤 -->
+<h2>思路（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 初始化指针</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code><span class="hl-key">pA</span> = <span class="hl-fn">headA</span></code>，<code><span class="hl-key">pB</span> = <span class="hl-fn">headB</span></code></p>
+      <p style="margin-top:8px; color:#94a3b8">两个指针分别从各自链表的头出发。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 同时前进</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>每次 pA 和 pB 各走一步。</p>
+      <p style="margin-top:8px; color:#94a3b8">如果 pA 到了末尾（null），就跳到 headB 继续走；pB 同理跳到 headA。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 相遇即答案</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>当 <code>pA === pB</code> 时，要么在交点相遇，要么同时到达 null（无交点）。</p>
+      <p style="margin-top:8px; color:#94a3b8">pA 走了 a+c+b 步，pB 走了 b+c+a 步，路程相同，一定同时到达交点。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 模拟过程 -->
+<h2>模拟过程</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">A=[4,1,8,4,5], B=[5,6,1,8,4,5]，相交于节点8</p>
+
+<div class="card" style="padding:12px; overflow-x:auto;">
+  <table class="sim-table">
+    <thead>
+      <tr>
+        <th>步数</th>
+        <th>pA</th>
+        <th>pB</th>
+        <th>说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>初始</td>
+        <td class="val-prev">4</td>
+        <td class="val-curr">5</td>
+        <td>各自起点</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td class="val-prev">1</td>
+        <td class="val-curr">6</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td class="val-prev">8</td>
+        <td class="val-curr">1</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td class="val-prev">4</td>
+        <td class="val-curr">8</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td class="val-prev">5</td>
+        <td class="val-curr">4</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td class="val-prev">null</td>
+        <td class="val-curr">5</td>
+        <td>pA 到末尾</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td class="val-prev">5 (B头)</td>
+        <td class="val-curr">null</td>
+        <td>pA 跳到 B头；pB 到末尾</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td class="val-prev">6</td>
+        <td class="val-curr">4 (A头)</td>
+        <td>pB 跳到 A头</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td class="val-prev">1</td>
+        <td class="val-curr">1</td>
+        <td></td>
+      </tr>
+      <tr class="row-final">
+        <td><strong>9</strong></td>
+        <td class="val-prev"><strong>8</strong></td>
+        <td class="val-curr"><strong>8</strong></td>
+        <td class="val-chain"><strong>pA === pB，相遇于节点 8</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 代码 -->
+<h2>代码</h2>
+<div class="key-point">时间 O(n+m)，空间 O(1) —— 面试首选写法</div>
+<pre><code><span class="hl-key">function</span> <span class="hl-fn">getIntersectionNode</span>(headA, headB) {
+  <span class="hl-key">let</span> pA = headA, pB = headB
+  <span class="hl-key">while</span> (pA !== pB) {
+    pA = pA ? pA.next : headB  <span class="hl-cmt">// pA走完A就走B</span>
+    pB = pB ? pB.next : headA  <span class="hl-cmt">// pB走完B就走A</span>
+  }
+  <span class="hl-key">return</span> pA
+}</code></pre>
+
+<!-- 关键提醒 -->
+<h2>关键提醒</h2>
+<div class="card-yellow">
+  <p><strong>代码极简但思路精妙。</strong></p>
+  <p style="margin-top:8px; font-size:14px">核心是消除长度差：A 链长 a+c，B 链长 b+c（c 是公共部分）。pA 走 a+c+b 步，pB 走 b+c+a 步，同时到达交点。</p>
+</div>
+
+<div class="card-yellow" style="margin-top:12px">
+  <p><strong>没有交点的情况也能正确处理。</strong></p>
+  <p style="margin-top:8px; font-size:14px">如果没有交点，pA 和 pB 会同时到达 null（pA 走了 a+b 步，pB 走了 b+a 步），while 条件 <code>pA !== pB</code> 中 <code>null === null</code> 为 true，返回 null。</p>
+</div>
+
+<!-- 今晚练习 -->
+<div class="tonight">
+  <h3>今晚练习</h3>
+  <ul style="padding-left:20px; font-size:14px; line-height:2">
+    <li><strong>交替遍历法</strong>：理解为什么走 a+b 和 b+a 步后一定相遇</li>
+    <li><strong>盲写代码</strong>：只有 4 行核心逻辑，写到闭着眼都能写出来</li>
+  </ul>
+</div>
+
+<!-- 导航 -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="019-remove-nth-from-end.html">&larr; 删除倒数第N</a>
+  <a class="btn-nav primary" href="020-valid-parentheses.html">下一题 &rarr;</a>
+</div>
+
+<script>
+function toggleStep(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function toggleExpandable(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function checkQuiz1(choice) {
+  const result = document.getElementById('quiz1-result');
+  result.classList.remove('hidden');
+  if (choice === 'both') {
+    result.className = 'think-result correct';
+    result.innerHTML = '<p><strong>正确！两种都行，但交替遍历更优雅。</strong></p>' +
+      '<ul style="padding-left:20px; margin-top:8px">' +
+      '<li><strong style="color:#c084fc">算长度差</strong> —— 先遍历一遍算长度，让长的先走差值步，再同步走</li>' +
+      '<li><strong style="color:#38bdf8">交替遍历</strong> —— A走完走B，B走完走A，代码更简洁（推荐）</li>' +
+      '</ul>';
+  } else {
+    result.className = 'think-result';
+    result.style.background = '#451a03';
+    result.style.border = '1px solid #d97706';
+    result.innerHTML = '<p>这个方法可以，但还有别的办法！</p>' +
+      '<p style="margin-top:8px; color:#94a3b8">提示：想想有没有办法不用提前算长度，也能让两个指针对齐？</p>';
+  }
+}
+</script>
+
+</body>
+</html>

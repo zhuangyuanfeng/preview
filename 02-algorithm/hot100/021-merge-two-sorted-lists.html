@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>#206 反转链表 - Hot 100</title>
+<title>#21 合并两个有序链表 - Hot 100</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -234,42 +234,25 @@
 </head>
 <body>
 
-<h1>#206 反转链表 <span class="tag-easy">Easy</span></h1>
+<h1>#21 合并两个有序链表 <span class="tag-easy">Easy</span></h1>
 <p class="subtitle">Hot 100 · 链表 · 第3周</p>
-
-<div style="padding:0;overflow:hidden;border:none;">
-  <img src="../../assets/reverse-linked-list.png" alt="反转链表" style="width:100%;height:auto;display:block;border-radius:12px;" />
-</div>
 
 <!-- 题目 -->
 <h2>题目</h2>
 <div class="card">
-  <p>反转一个单链表。</p>
-  <pre><code>输入：<span class="hl-num">1</span> → <span class="hl-num">2</span> → <span class="hl-num">3</span> → <span class="hl-num">4</span> → <span class="hl-num">5</span>
-输出：<span class="hl-num">5</span> → <span class="hl-num">4</span> → <span class="hl-num">3</span> → <span class="hl-num">2</span> → <span class="hl-num">1</span></code></pre>
-</div>
-
-<!-- 链表基础 -->
-<h2>链表基础</h2>
-<div class="card">
-  <p><strong style="color:#38bdf8">链表节点结构：</strong></p>
-  <pre><code>{ <span class="hl-key">val</span>: 数据, <span class="hl-key">next</span>: 指向下一个节点的指针 }</code></pre>
-  <p style="margin-top:12px"><strong style="color:#38bdf8">和数组的区别：</strong></p>
-  <ul style="padding-left:20px; margin-top:8px; font-size:14px">
-    <li>不能随机访问（没有下标），只能从头一个一个遍历</li>
-    <li>但插入和删除操作是 <strong>O(1)</strong>（只要知道位置，改指针就行）</li>
-    <li>数组插入删除是 O(n)（需要移动后面所有元素）</li>
-  </ul>
+  <p>将两个升序链表合并为一个新的升序链表并返回。</p>
+  <pre><code>输入：l1 = [<span class="hl-num">1</span>,<span class="hl-num">2</span>,<span class="hl-num">4</span>]，l2 = [<span class="hl-num">1</span>,<span class="hl-num">3</span>,<span class="hl-num">4</span>]
+输出：[<span class="hl-num">1</span>,<span class="hl-num">1</span>,<span class="hl-num">2</span>,<span class="hl-num">3</span>,<span class="hl-num">4</span>,<span class="hl-num">4</span>]</code></pre>
 </div>
 
 <!-- 先想一想 -->
 <h2>先想一想</h2>
 <div class="think-box" id="quiz1">
-  <p style="margin-bottom:12px">反转链表需要几个指针变量？分别有什么作用？</p>
+  <p style="margin-bottom:12px">合并两个有序链表，最简单的方式是什么？</p>
   <div style="margin-bottom:12px">
-    <button class="btn btn-secondary" onclick="checkQuiz1(2)">2个</button>
-    <button class="btn btn-secondary" onclick="checkQuiz1(3)">3个</button>
-    <button class="btn btn-secondary" onclick="checkQuiz1(4)">4个</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1(1)">新建链表逐个比较</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1(2)">递归</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1(3)">先合并再排序</button>
   </div>
   <div class="think-result hidden" id="quiz1-result"></div>
 </div>
@@ -281,107 +264,125 @@
 <div class="steps">
   <div class="step">
     <div class="step-header" onclick="toggleStep(this)">
-      <span><span class="step-num">1</span> 初始化指针</span>
+      <span><span class="step-num">1</span> 创建虚拟头节点 dummy</span>
       <span class="step-arrow">▶</span>
     </div>
     <div class="step-body">
-      <p><code><span class="hl-key">prev</span> = <span class="hl-num">null</span></code>，<code><span class="hl-key">curr</span> = <span class="hl-fn">head</span></code></p>
-      <p style="margin-top:8px; color:#94a3b8">prev 是"已反转部分"的头，一开始还没反转任何节点，所以是 null。</p>
+      <p><code><span class="hl-key">const</span> dummy = { <span class="hl-key">next</span>: <span class="hl-num">null</span> }</code></p>
+      <p style="margin-top:8px; color:#94a3b8">dummy 是一个"假的"头节点，最终返回 dummy.next 就是合并后的链表头。使用 dummy 可以避免处理头节点的特殊情况。</p>
     </div>
   </div>
 
   <div class="step">
     <div class="step-header" onclick="toggleStep(this)">
-      <span><span class="step-num">2</span> 暂存下一个节点</span>
+      <span><span class="step-num">2</span> 比较两个链表当前节点</span>
       <span class="step-arrow">▶</span>
     </div>
     <div class="step-body">
-      <p><code><span class="hl-key">next</span> = curr.<span class="hl-fn">next</span></code></p>
-      <p style="margin-top:8px; color:#94a3b8">因为下一步要改 curr.next 的指向，所以必须先把原来的 next 存起来，否则链就断了。</p>
+      <p>用 <code><span class="hl-key">while</span> (l1 &amp;&amp; l2)</code> 循环，每次比较 <code>l1.val</code> 和 <code>l2.val</code>。</p>
+      <p style="margin-top:8px; color:#94a3b8">两个链表都还有节点时，才需要比较。任何一个走完了，循环就结束。</p>
     </div>
   </div>
 
   <div class="step">
     <div class="step-header" onclick="toggleStep(this)">
-      <span><span class="step-num">3</span> 反转指针</span>
+      <span><span class="step-num">3</span> 较小的接到结果链表</span>
       <span class="step-arrow">▶</span>
     </div>
     <div class="step-body">
-      <p><code>curr.<span class="hl-fn">next</span> = <span class="hl-key">prev</span></code></p>
-      <p style="margin-top:8px; color:#94a3b8">这是核心操作！把当前节点的 next 从"指向后面"改为"指向前面"。</p>
+      <p>如果 <code>l1.val &lt;= l2.val</code>，就把 l1 接到 curr 后面，然后 <code>l1 = l1.next</code>；否则接 l2。</p>
+      <p style="margin-top:8px; color:#94a3b8">每次接完一个节点后，<code>curr = curr.next</code>，让 curr 指向结果链表的末尾。</p>
     </div>
   </div>
 
   <div class="step">
     <div class="step-header" onclick="toggleStep(this)">
-      <span><span class="step-num">4</span> 移动指针</span>
+      <span><span class="step-num">4</span> 处理剩余节点</span>
       <span class="step-arrow">▶</span>
     </div>
     <div class="step-body">
-      <p><code><span class="hl-key">prev</span> = curr</code>，<code><span class="hl-key">curr</span> = next</code></p>
-      <p style="margin-top:8px; color:#94a3b8">prev 和 curr 都向前走一步，准备处理下一个节点。</p>
-    </div>
-  </div>
-
-  <div class="step">
-    <div class="step-header" onclick="toggleStep(this)">
-      <span><span class="step-num">5</span> 循环 &amp; 返回</span>
-      <span class="step-arrow">▶</span>
-    </div>
-    <div class="step-body">
-      <p>重复步骤 2-4，直到 <code>curr === <span class="hl-num">null</span></code>（所有节点都处理完了）。</p>
-      <p style="margin-top:8px">最后返回 <code><span class="hl-key">prev</span></code>，它就是新链表的头节点。</p>
+      <p><code>curr.<span class="hl-fn">next</span> = l1 || l2</code></p>
+      <p style="margin-top:8px; color:#94a3b8">循环结束后，l1 和 l2 中最多还有一个没走完。因为剩余部分本身就是有序的，直接接到结果链表末尾即可。</p>
     </div>
   </div>
 </div>
 
 <!-- 模拟过程 -->
 <h2>模拟过程</h2>
-<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">以链表 1→2→3 为例，跟着走一遍</p>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">以 l1=[1,2,4], l2=[1,3,4] 为例，跟着走一遍</p>
 
 <div class="card" style="padding:12px; overflow-x:auto;">
   <table class="sim-table">
     <thead>
       <tr>
         <th>阶段</th>
-        <th>next</th>
-        <th>操作后链表</th>
-        <th>prev</th>
-        <th>curr</th>
+        <th>比较</th>
+        <th>操作</th>
+        <th>结果链表</th>
+        <th>l1</th>
+        <th>l2</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td>初始</td>
         <td>-</td>
-        <td class="val-chain">1→2→3</td>
-        <td class="val-prev">null</td>
-        <td class="val-curr">1</td>
+        <td>-</td>
+        <td class="val-chain">dummy</td>
+        <td class="val-prev">[1,2,4]</td>
+        <td class="val-curr">[1,3,4]</td>
       </tr>
       <tr>
         <td>Step 1</td>
-        <td class="val-next">2</td>
-        <td class="val-chain">1→null</td>
-        <td class="val-prev">1</td>
-        <td class="val-curr">2</td>
+        <td class="val-next">1 <= 1</td>
+        <td>接 l1</td>
+        <td class="val-chain">dummy→1</td>
+        <td class="val-prev">[2,4]</td>
+        <td class="val-curr">[1,3,4]</td>
       </tr>
       <tr>
         <td>Step 2</td>
-        <td class="val-next">3</td>
-        <td class="val-chain">2→1→null</td>
-        <td class="val-prev">2</td>
-        <td class="val-curr">3</td>
+        <td class="val-next">2 > 1</td>
+        <td>接 l2</td>
+        <td class="val-chain">dummy→1→1</td>
+        <td class="val-prev">[2,4]</td>
+        <td class="val-curr">[3,4]</td>
       </tr>
       <tr>
         <td>Step 3</td>
-        <td class="val-next">null</td>
-        <td class="val-chain">3→2→1→null</td>
-        <td class="val-prev">3</td>
+        <td class="val-next">2 <= 3</td>
+        <td>接 l1</td>
+        <td class="val-chain">dummy→1→1→2</td>
+        <td class="val-prev">[4]</td>
+        <td class="val-curr">[3,4]</td>
+      </tr>
+      <tr>
+        <td>Step 4</td>
+        <td class="val-next">4 > 3</td>
+        <td>接 l2</td>
+        <td class="val-chain">dummy→1→1→2→3</td>
+        <td class="val-prev">[4]</td>
+        <td class="val-curr">[4]</td>
+      </tr>
+      <tr>
+        <td>Step 5</td>
+        <td class="val-next">4 <= 4</td>
+        <td>接 l1</td>
+        <td class="val-chain">dummy→1→1→2→3→4</td>
+        <td class="val-prev">null</td>
+        <td class="val-curr">[4]</td>
+      </tr>
+      <tr>
+        <td>Step 6</td>
+        <td>-</td>
+        <td>接剩余 l2</td>
+        <td class="val-chain">dummy→1→1→2→3→4→4</td>
+        <td class="val-prev">null</td>
         <td class="val-curr">null</td>
       </tr>
       <tr class="row-final">
-        <td colspan="2"><strong>结束</strong></td>
-        <td colspan="3" class="val-chain"><strong>return prev → 3→2→1→null</strong></td>
+        <td colspan="3"><strong>结束</strong></td>
+        <td colspan="3" class="val-chain"><strong>return dummy.next → 1→1→2→3→4→4</strong></td>
       </tr>
     </tbody>
   </table>
@@ -389,17 +390,22 @@
 
 <!-- 迭代版代码 -->
 <h2>迭代版代码</h2>
-<div class="key-point">时间 O(n)，空间 O(1) —— 面试首选写法</div>
-<pre><code><span class="hl-key">function</span> <span class="hl-fn">reverseList</span>(head) {
-  <span class="hl-key">let</span> prev = <span class="hl-num">null</span>
-  <span class="hl-key">let</span> curr = head
-  <span class="hl-key">while</span> (curr) {
-    <span class="hl-key">const</span> next = curr.next  <span class="hl-cmt">// 暂存</span>
-    curr.next = prev         <span class="hl-cmt">// 反转</span>
-    prev = curr              <span class="hl-cmt">// 前进</span>
-    curr = next              <span class="hl-cmt">// 前进</span>
+<div class="key-point">时间 O(n+m)，空间 O(1) —— 面试首选写法</div>
+<pre><code><span class="hl-key">function</span> <span class="hl-fn">mergeTwoLists</span>(l1, l2) {
+  <span class="hl-key">const</span> dummy = { <span class="hl-key">next</span>: <span class="hl-num">null</span> }
+  <span class="hl-key">let</span> curr = dummy
+  <span class="hl-key">while</span> (l1 &amp;&amp; l2) {
+    <span class="hl-key">if</span> (l1.val &lt;= l2.val) {
+      curr.next = l1        <span class="hl-cmt">// 接较小的</span>
+      l1 = l1.next           <span class="hl-cmt">// l1 前进</span>
+    } <span class="hl-key">else</span> {
+      curr.next = l2        <span class="hl-cmt">// 接较小的</span>
+      l2 = l2.next           <span class="hl-cmt">// l2 前进</span>
+    }
+    curr = curr.next         <span class="hl-cmt">// 结果链表前进</span>
   }
-  <span class="hl-key">return</span> prev
+  curr.next = l1 || l2       <span class="hl-cmt">// 接上剩余部分</span>
+  <span class="hl-key">return</span> dummy.next
 }</code></pre>
 
 <!-- 递归版代码 -->
@@ -410,50 +416,41 @@
     <span class="step-arrow">▶</span>
   </div>
   <div class="expandable-body">
-    <div class="key-point">时间 O(n)，空间 O(n)（递归栈）—— 理解递归思维</div>
-    <pre><code><span class="hl-key">function</span> <span class="hl-fn">reverseList</span>(head) {
-  <span class="hl-key">if</span> (!head || !head.next) <span class="hl-key">return</span> head
-  <span class="hl-key">const</span> newHead = <span class="hl-fn">reverseList</span>(head.next)
-  head.next.next = head  <span class="hl-cmt">// 让下一个节点指回自己</span>
-  head.next = <span class="hl-num">null</span>       <span class="hl-cmt">// 断开原来的正向链接</span>
-  <span class="hl-key">return</span> newHead
+    <div class="key-point">时间 O(n+m)，空间 O(n+m)（递归栈）—— 理解递归思维</div>
+    <pre><code><span class="hl-key">function</span> <span class="hl-fn">mergeTwoLists</span>(l1, l2) {
+  <span class="hl-key">if</span> (!l1) <span class="hl-key">return</span> l2
+  <span class="hl-key">if</span> (!l2) <span class="hl-key">return</span> l1
+  <span class="hl-key">if</span> (l1.val &lt;= l2.val) {
+    l1.next = <span class="hl-fn">mergeTwoLists</span>(l1.next, l2)
+    <span class="hl-key">return</span> l1
+  } <span class="hl-key">else</span> {
+    l2.next = <span class="hl-fn">mergeTwoLists</span>(l1, l2.next)
+    <span class="hl-key">return</span> l2
+  }
 }</code></pre>
-  </div>
-</div>
-
-<!-- 递归 Quiz -->
-<h2>递归理解检验</h2>
-<div class="think-box" id="quiz2">
-  <p style="margin-bottom:12px">递归版中 <code>head.next.next = head</code> 是什么意思？</p>
-  <button class="btn btn-primary" onclick="showQuiz2()">看答案</button>
-  <div class="think-result hidden" id="quiz2-result">
-    <p><code>head.next</code> 是原链表中 head 的下一个节点。</p>
-    <p style="margin-top:8px"><code>head.next.next = head</code> 就是让这个"下一个节点"的 next 指回 head，实现反转。</p>
-    <p style="margin-top:8px">然后 <code>head.next = null</code> 断开原来的正向链接，防止出现环。</p>
-    <p style="margin-top:12px; color:#94a3b8">举例：处理节点 4 时，4.next 是 5，让 5.next = 4（反转），再让 4.next = null（断开）。</p>
   </div>
 </div>
 
 <!-- 关键提醒 -->
 <h2>关键提醒</h2>
 <div class="card-yellow">
-  <p><strong>链表题的核心就是"画图"。</strong></p>
-  <p style="margin-top:8px; font-size:14px">面试时一定要在纸上画出节点和指针的变化过程，不要只在脑子里想。每一步操作后，箭头指向哪里、哪些链断了，画清楚就不容易出错。</p>
+  <p><strong>dummy 节点（虚拟头节点）是链表题的常用技巧，避免处理头节点的特殊情况。</strong></p>
+  <p style="margin-top:8px; font-size:14px">当你不确定最终链表的头节点是谁时，创建一个 dummy 节点，最后返回 dummy.next。这样不需要单独判断"第一个节点怎么接"，代码会简洁很多。</p>
 </div>
 
 <!-- 今晚练习 -->
 <div class="tonight">
   <h3>今晚练习</h3>
   <ul style="padding-left:20px; font-size:14px; line-height:2">
-    <li><strong>迭代版</strong>：5 分钟盲写，写到闭着眼都能写出来</li>
-    <li><strong>递归版</strong>：理解思路即可，能口述过程就行</li>
+    <li><strong>迭代版</strong>：5 分钟盲写，注意 dummy 节点的使用</li>
+    <li><strong>递归版</strong>：理解思路即可，能口述递归终止条件和递归逻辑</li>
   </ul>
 </div>
 
 <!-- 导航 -->
 <div class="nav-bottom">
-  <a class="btn-nav" href="042-trapping-rain-water.html">← 接雨水</a>
-  <a class="btn-nav primary" href="021-merge-two-sorted-lists.html">下一题 → 合并链表</a>
+  <a class="btn-nav" href="206-reverse-linked-list.html">← 反转链表</a>
+  <a class="btn-nav primary" href="141-linked-list-cycle.html">下一题 →</a>
 </div>
 
 <script>
@@ -474,26 +471,27 @@ function toggleExpandable(header) {
 function checkQuiz1(n) {
   const result = document.getElementById('quiz1-result');
   result.classList.remove('hidden');
-  if (n === 3) {
+  if (n === 1) {
     result.className = 'think-result correct';
-    result.innerHTML = '<p><strong>正确！需要 3 个指针：</strong></p>' +
+    result.innerHTML = '<p><strong>正确！新建链表逐个比较 —— 虚拟头节点 + 逐个比较。</strong></p>' +
       '<ul style="padding-left:20px; margin-top:8px">' +
-      '<li><strong style="color:#c084fc">prev</strong> —— 已反转部分的头节点</li>' +
-      '<li><strong style="color:#38bdf8">curr</strong> —— 当前正在处理的节点</li>' +
-      '<li><strong style="color:#fbbf24">next</strong> —— 暂存下一个节点，防止断链</li>' +
+      '<li>创建一个 <strong style="color:#38bdf8">dummy</strong> 虚拟头节点作为结果链表的起点</li>' +
+      '<li>每次比较 l1 和 l2 当前节点，把较小的接到结果链表后面</li>' +
+      '<li>最后把没走完的链表直接接上</li>' +
       '</ul>';
+  } else if (n === 2) {
+    result.className = 'think-result';
+    result.style.background = '#451a03';
+    result.style.border = '1px solid #d97706';
+    result.innerHTML = '<p>递归也可以解，但不是"最简单"的方式。</p>' +
+      '<p style="margin-top:8px; color:#94a3b8">提示：最直观的方式是新建一个链表，逐个比较两个链表的节点，把较小的接上去。</p>';
   } else {
     result.className = 'think-result';
     result.style.background = '#451a03';
     result.style.border = '1px solid #d97706';
-    result.innerHTML = '<p>再想想？改 curr.next 之后，怎么继续遍历下一个节点？</p>' +
-      '<p style="margin-top:8px; color:#94a3b8">提示：如果直接改 curr.next = prev，原来的 curr.next 就丢了……</p>';
+    result.innerHTML = '<p>先合并再排序可以做，但没有利用"两个链表已经有序"这个条件。</p>' +
+      '<p style="margin-top:8px; color:#94a3b8">提示：既然两个链表都是有序的，可以像归并排序的 merge 步骤一样，逐个比较就行。</p>';
   }
-}
-
-function showQuiz2() {
-  document.getElementById('quiz2-result').classList.remove('hidden');
-  document.getElementById('quiz2-result').className = 'think-result correct';
 }
 </script>
 

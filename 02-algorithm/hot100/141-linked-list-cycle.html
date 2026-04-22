@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#141 环形链表 - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-easy { background: #065f46; color: #6ee7b7; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .card-yellow {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 2px solid #eab308;
+  }
+  .card-yellow strong { color: #facc15; }
+
+  .image-placeholder {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 40px 20px;
+    margin: 16px 0;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+
+  /* Simulation table */
+  .sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+  }
+  .sim-table th {
+    background: #334155;
+    color: #94a3b8;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 2px solid #475569;
+  }
+  .sim-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #1e293b;
+    vertical-align: top;
+  }
+  .sim-table tr:hover { background: #1e293b; }
+  .sim-table .val-prev { color: #c084fc; }
+  .sim-table .val-curr { color: #38bdf8; }
+  .sim-table .val-next { color: #fbbf24; }
+  .sim-table .val-chain { color: #34d399; }
+  .sim-table .row-final { background: #064e3b; }
+  .sim-table .row-final td { border-bottom: none; }
+
+  /* Expandable code */
+  .expandable {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  .expandable-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .expandable-header:hover { background: #334155; }
+  .expandable-body {
+    display: none;
+    padding: 0 16px 16px;
+  }
+  .expandable-body.open { display: block; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+
+  .tonight {
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 2px solid #38bdf8;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+  .tonight h3 { margin-top: 0; color: #38bdf8; font-size: 15px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<h1>#141 环形链表 <span class="tag-easy">Easy</span></h1>
+<p class="subtitle">Hot 100 · 链表 · 第3周</p>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给你一个链表的头节点 <code>head</code>，判断链表中是否有环。如果链表中存在环，返回 <code><span class="hl-num">true</span></code>；否则返回 <code><span class="hl-num">false</span></code>。</p>
+  <pre><code>输入：head = [<span class="hl-num">3</span>,<span class="hl-num">2</span>,<span class="hl-num">0</span>,<span class="hl-num">-4</span>], pos = <span class="hl-num">1</span> <span class="hl-cmt">// 尾连接到 index 1</span>
+输出：<span class="hl-num">true</span></code></pre>
+</div>
+
+<!-- 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="quiz1">
+  <p style="margin-bottom:12px">怎么判断链表有环？</p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkQuiz1('set')">用Set记录走过的节点</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1('pointer')">快慢指针</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1('both')">两种都行</button>
+  </div>
+  <div class="think-result hidden" id="quiz1-result"></div>
+</div>
+
+<!-- 思路 -->
+<h2>思路（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 快指针走2步，慢指针走1步</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code><span class="hl-key">slow</span></code> 每次走 1 步，<code><span class="hl-key">fast</span></code> 每次走 2 步。两个指针都从 <code>head</code> 出发。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 如果有环，快慢指针一定相遇</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>进入环后，快指针每一步都比慢指针多走 1 步，所以它们之间的距离每一步缩小 1，最终一定会相遇。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 如果 fast 到 null，说明无环</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>如果链表没有环，<code>fast</code> 最终会走到 <code><span class="hl-num">null</span></code>，循环结束，返回 <code><span class="hl-num">false</span></code>。</p>
+    </div>
+  </div>
+</div>
+
+<!-- Key Insight -->
+<h2>关键洞察</h2>
+<div class="key-point">
+  <strong style="color:#38bdf8">为什么快慢指针一定相遇？</strong>
+  <p style="margin-top:8px">因为进环后，每一步快指针和慢指针的距离缩小 1。假设进环时两者相距 d 步，那么经过 d 步后距离变为 0，即相遇。</p>
+</div>
+
+<!-- 快慢指针代码 -->
+<h2>快慢指针代码</h2>
+<div class="key-point">时间 O(n)，空间 O(1) —— 面试首选写法</div>
+<pre><code><span class="hl-key">function</span> <span class="hl-fn">hasCycle</span>(head) {
+  <span class="hl-key">let</span> slow = head
+  <span class="hl-key">let</span> fast = head
+  <span class="hl-key">while</span> (fast && fast.next) {
+    slow = slow.next           <span class="hl-cmt">// 慢指针走1步</span>
+    fast = fast.next.next      <span class="hl-cmt">// 快指针走2步</span>
+    <span class="hl-key">if</span> (slow === fast) <span class="hl-key">return</span> <span class="hl-num">true</span>
+  }
+  <span class="hl-key">return</span> <span class="hl-num">false</span>
+}</code></pre>
+
+<!-- Hash Set 版本 -->
+<h2>Hash Set 版本</h2>
+<div class="expandable">
+  <div class="expandable-header" onclick="toggleExpandable(this)">
+    <span>点击展开 Hash Set 版（O(n) 空间）</span>
+    <span class="step-arrow">▶</span>
+  </div>
+  <div class="expandable-body">
+    <div class="key-point">时间 O(n)，空间 O(n) —— 思路更直观但空间开销大</div>
+    <pre><code><span class="hl-key">function</span> <span class="hl-fn">hasCycle</span>(head) {
+  <span class="hl-key">const</span> seen = <span class="hl-key">new</span> <span class="hl-fn">Set</span>()
+  <span class="hl-key">let</span> curr = head
+  <span class="hl-key">while</span> (curr) {
+    <span class="hl-key">if</span> (seen.has(curr)) <span class="hl-key">return</span> <span class="hl-num">true</span>
+    seen.add(curr)
+    curr = curr.next
+  }
+  <span class="hl-key">return</span> <span class="hl-num">false</span>
+}</code></pre>
+  </div>
+</div>
+
+<!-- 关键提醒 -->
+<h2>关键提醒</h2>
+<div class="card-yellow">
+  <p><strong>while 条件是 <code>fast && fast.next</code>，因为 fast 走两步，必须确保 fast 和 fast.next 都不是 null。</strong></p>
+  <p style="margin-top:8px; font-size:14px">如果只检查 <code>fast.next</code>，当 fast 本身是 null 时就会报错。两个条件缺一不可。</p>
+</div>
+
+<!-- 今晚练习 -->
+<div class="tonight">
+  <h3>今晚练习</h3>
+  <ul style="padding-left:20px; font-size:14px; line-height:2">
+    <li><strong>快慢指针版</strong>：5 分钟盲写，注意 while 条件</li>
+    <li><strong>Hash Set 版</strong>：理解思路即可，能口述过程就行</li>
+  </ul>
+</div>
+
+<!-- 导航 -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="021-merge-two-sorted-lists.html">&larr; 合并链表</a>
+  <a class="btn-nav primary" href="142-linked-list-cycle-ii.html">下一题 &rarr;</a>
+</div>
+
+<script>
+function toggleStep(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function toggleExpandable(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function checkQuiz1(answer) {
+  const result = document.getElementById('quiz1-result');
+  result.classList.remove('hidden');
+  if (answer === 'both') {
+    result.className = 'think-result correct';
+    result.innerHTML = '<p><strong>正确！两种都行，但快慢指针更优。</strong></p>' +
+      '<ul style="padding-left:20px; margin-top:8px">' +
+      '<li><strong style="color:#c084fc">Hash Set</strong> —— 遍历时记录访问过的节点，遇到重复就是有环。时间 O(n)，空间 O(n)</li>' +
+      '<li><strong style="color:#38bdf8">快慢指针</strong> —— 快指针走2步慢指针走1步，有环一定相遇。时间 O(n)，空间 O(1)</li>' +
+      '</ul>' +
+      '<p style="margin-top:8px; color:#94a3b8">面试推荐快慢指针，因为空间复杂度是 O(1)。</p>';
+  } else {
+    result.className = 'think-result';
+    result.style.background = '#451a03';
+    result.style.border = '1px solid #d97706';
+    result.innerHTML = '<p>这个方法可以，但还有别的方法哦！再想想？</p>' +
+      '<p style="margin-top:8px; color:#94a3b8">提示：两种方法都能解决这道题，但空间复杂度不同。</p>';
+  }
+}
+</script>
+
+</body>
+</html>

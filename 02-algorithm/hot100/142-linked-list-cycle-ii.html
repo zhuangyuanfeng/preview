@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#142 环形链表 II - Hot 100</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 24px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 18px; margin: 28px 0 12px; border-left: 3px solid #38bdf8; padding-left: 12px; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .tag-medium { background: #92400e; color: #fbbf24; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+  .card-yellow {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    border: 2px solid #eab308;
+  }
+  .card-yellow strong { color: #facc15; }
+
+  .image-placeholder {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 40px 20px;
+    margin: 16px 0;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  pre {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: 'Courier New', monospace; }
+  .hl-key { color: #c084fc; }
+  .hl-str { color: #34d399; }
+  .hl-fn { color: #60a5fa; }
+  .hl-num { color: #fbbf24; }
+  .hl-cmt { color: #64748b; }
+
+  .key-point {
+    background: #1e3a5f;
+    border-left: 3px solid #38bdf8;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+
+  /* Steps */
+  .steps { margin: 16px 0; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .step-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .step-header:hover { background: #334155; }
+  .step-num {
+    background: #38bdf8;
+    color: #0f172a;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .step-arrow { color: #64748b; transition: transform 0.2s; }
+  .step-arrow.open { transform: rotate(90deg); }
+  .step-body {
+    display: none;
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+  .step-body.open { display: block; }
+
+  /* Quiz */
+  .think-box {
+    background: #1e293b;
+    border: 2px dashed #475569;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    margin: 4px;
+  }
+  .btn-primary { background: #38bdf8; color: #0f172a; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+
+  .hidden { display: none; }
+
+  .think-result {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .think-result.correct { background: #064e3b; border: 1px solid #059669; }
+
+  /* Expandable */
+  .expandable {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  .expandable-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+  .expandable-header:hover { background: #334155; }
+  .expandable-body {
+    display: none;
+    padding: 0 16px 16px;
+  }
+  .expandable-body.open { display: block; }
+
+  .nav-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding: 32px 0;
+  }
+  .btn-nav {
+    padding: 12px 24px;
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav:hover { background: #475569; }
+  .btn-nav.primary { background: #38bdf8; color: #0f172a; }
+  .btn-nav.primary:hover { background: #7dd3fc; }
+</style>
+</head>
+<body>
+
+<h1>#142 环形链表 II <span class="tag-medium">Medium</span></h1>
+<p class="subtitle">Hot 100 · 链表 · 第3周</p>
+
+<!-- 题目 -->
+<h2>题目</h2>
+<div class="card">
+  <p>给定一个链表的头节点 <code>head</code>，返回链表开始入环的第一个节点。如果链表无环，则返回 <code><span class="hl-num">null</span></code>。</p>
+  <pre><code>输入：[<span class="hl-num">3</span>,<span class="hl-num">2</span>,<span class="hl-num">0</span>,<span class="hl-num">-4</span>] pos=<span class="hl-num">1</span>
+期望：节点 <span class="hl-num">2</span>（index <span class="hl-num">1</span>）</code></pre>
+</div>
+
+<!-- 先想一想 -->
+<h2>先想一想</h2>
+<div class="think-box" id="quiz1">
+  <p style="margin-bottom:12px">找到环的入口需要几个阶段？</p>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-secondary" onclick="checkQuiz1(1)">1个</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1(2)">2个</button>
+    <button class="btn btn-secondary" onclick="checkQuiz1(3)">3个</button>
+  </div>
+  <div class="think-result hidden" id="quiz1-result"></div>
+</div>
+
+<!-- 思路 -->
+<h2>思路（逐步展开）</h2>
+<p style="color:#94a3b8; font-size:14px; margin-bottom:8px;">点击每一步展开详细说明</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">1</span> 快慢指针找相遇点（同 #141）</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code><span class="hl-key">slow</span></code> 每次走 1 步，<code><span class="hl-key">fast</span></code> 每次走 2 步。如果有环，它们一定会在环内某个节点相遇。</p>
+      <p style="margin-top:8px; color:#94a3b8">如果 fast 走到了 null，说明没有环，直接返回 null。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">2</span> 相遇后，一个指针回到 head</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p>找到相遇点后，让一个新指针 <code><span class="hl-key">ptr</span></code> 从 <code><span class="hl-fn">head</span></code> 出发，<code><span class="hl-key">slow</span></code> 留在相遇点。</p>
+      <p style="margin-top:8px; color:#94a3b8">这一步是利用数学推导的结论：从 head 到入口的距离 = 从相遇点到入口的距离。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-header" onclick="toggleStep(this)">
+      <span><span class="step-num">3</span> 两个指针同速走，再次相遇就是入口</span>
+      <span class="step-arrow">▶</span>
+    </div>
+    <div class="step-body">
+      <p><code><span class="hl-key">ptr</span></code> 和 <code><span class="hl-key">slow</span></code> 每次都走 1 步，当它们相遇时，相遇点就是环的入口节点。</p>
+      <p style="margin-top:8px; color:#94a3b8">返回 ptr（或 slow，此时它们指向同一个节点）。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 数学推导 -->
+<h2>数学推导</h2>
+<div class="expandable">
+  <div class="expandable-header" onclick="toggleExpandable(this)">
+    <span>点击展开数学证明（面试高频追问）</span>
+    <span class="step-arrow">▶</span>
+  </div>
+  <div class="expandable-body">
+    <div class="card">
+      <p>设 <strong style="color:#38bdf8">a</strong> = head 到入口的距离，<strong style="color:#38bdf8">b</strong> = 入口到相遇点的距离，<strong style="color:#38bdf8">c</strong> = 环长。</p>
+      <ul style="padding-left:20px; margin-top:12px; font-size:14px; line-height:2">
+        <li>slow 走了 <code>a + b</code> 步</li>
+        <li>fast 走了 <code>a + b + nc</code> 步（在环里多绕了 n 圈）</li>
+        <li>因为 fast = 2 * slow，所以 <code>a + b + nc = 2(a + b)</code></li>
+        <li>化简得 <code><strong style="color:#fbbf24">a + b = nc</strong></code></li>
+        <li>即 <code><strong style="color:#fbbf24">a = nc - b = (n-1)c + (c-b)</strong></code></li>
+      </ul>
+      <p style="margin-top:12px; color:#94a3b8">所以从 head 走 a 步 = 从相遇点走 (c-b) 步，都恰好到达入口。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 代码 -->
+<h2>代码</h2>
+<div class="key-point">时间 O(n)，空间 O(1) —— 快慢指针 + 数学推导</div>
+<pre><code><span class="hl-key">function</span> <span class="hl-fn">detectCycle</span>(head) {
+  <span class="hl-key">let</span> slow = head, fast = head
+  <span class="hl-key">while</span> (fast &amp;&amp; fast.next) {
+    slow = slow.next
+    fast = fast.next.next
+    <span class="hl-key">if</span> (slow === fast) {        <span class="hl-cmt">// 找到相遇点</span>
+      <span class="hl-key">let</span> ptr = head
+      <span class="hl-key">while</span> (ptr !== slow) {     <span class="hl-cmt">// 同速走找入口</span>
+        ptr = ptr.next
+        slow = slow.next
+      }
+      <span class="hl-key">return</span> ptr               <span class="hl-cmt">// 相遇点即入口</span>
+    }
+  }
+  <span class="hl-key">return</span> <span class="hl-num">null</span>                 <span class="hl-cmt">// 无环</span>
+}</code></pre>
+
+<!-- 关键提醒 -->
+<h2>关键提醒</h2>
+<div class="card-yellow">
+  <p><strong>这道题的数学推导是面试高频追问，建议背住 a = (n-1)c + (c-b) 这个结论。</strong></p>
+  <p style="margin-top:8px; font-size:14px">记住两个阶段：第一阶段快慢指针找相遇点，第二阶段从 head 和相遇点同速走找入口。推导的核心是 fast 走的路程是 slow 的两倍。</p>
+</div>
+
+<!-- 导航 -->
+<div class="nav-bottom">
+  <a class="btn-nav" href="141-linked-list-cycle.html">&larr; 环形链表</a>
+  <a class="btn-nav primary" href="019-remove-nth-from-end.html">下一题 &rarr;</a>
+</div>
+
+<script>
+function toggleStep(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function toggleExpandable(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.step-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function checkQuiz1(n) {
+  const result = document.getElementById('quiz1-result');
+  result.classList.remove('hidden');
+  if (n === 2) {
+    result.className = 'think-result correct';
+    result.innerHTML = '<p><strong>正确！需要 2 个阶段：</strong></p>' +
+      '<ul style="padding-left:20px; margin-top:8px">' +
+      '<li><strong style="color:#c084fc">第一阶段</strong> —— 快慢指针找相遇点</li>' +
+      '<li><strong style="color:#38bdf8">第二阶段</strong> —— 从 head 和相遇点同速走找入口</li>' +
+      '</ul>';
+  } else {
+    result.className = 'think-result';
+    result.style.background = '#451a03';
+    result.style.border = '1px solid #d97706';
+    result.innerHTML = '<p>再想想？找到环还不够，还需要找到环的入口……</p>' +
+      '<p style="margin-top:8px; color:#94a3b8">提示：第一步先用快慢指针确认有环并找到相遇点，第二步再利用数学性质找入口。</p>';
+  }
+}
+</script>
+
+</body>
+</html>
