@@ -1,22 +1,61 @@
-# Session Handoff
+# Session Handoff（跨机交接，动态）
 
-> 换电脑时由 `sync-out` 自动更新，另一台电脑 `sync-in` 读取恢复上下文
+> 每次离开前用 `./sync.sh out "简述"` 自动更新本文件。
+> 静态信息（画像、协作约定、v2 决策）放在 `LEARNING-CONTEXT.md`。
 
 ## Last Updated
-2026-04-22
+2026-04-27
 
 ## What I Was Doing
-教材更新到 4/10，终端和网页都已同步。新增链表系列(#21/#141/#142/#19/#160)和栈系列(#20/#155)的教材。
+完成 v2 计划重整（commit `3b35ee1`），基于学习风格测评重设节奏。
+新增 `LEARNING-CONTEXT.md` 作为跨机上下文恢复入口。
+今晚（4.27）开始 Week 1 试跑 Day 1。
+
+## Current Phase
+- 阶段：**v2 / Week 1 试跑**
+- 时间表：7 周冲刺（4.28-6.15），目标 **6.18** 进面试
+- 当前周：Week 1（算法续命 + JS 收尾）
+- 备份分支：`backup/before-restructure-2026-04-27`（v1 还原点）
 
 ## Current Progress
-- 打卡进度：Day 1-8 已完成（3/20-3/27）
-- 教材覆盖：Day 1-22（3/20-4/10）
-- 作业文件：0327-0402
+- 算法 Hot 100：**17/100**（停在 Day 8 = 3.27，断更近 1 月，本周续命）
+- JS 手写题：**7/9**（剩 instanceof + 数组扁平化，本周补完）
+- AI 项目：未开始（Week 4 启动）
+- 简历：v1 状态（Week 6 重做）
+- 学习风格画像：已测评并写入 memory（详见 LEARNING-CONTEXT.md）
+- 工作痛点池：未填（计划今晚先填 5 个）
 
-## Next Steps
-- 继续学习/复习教材内容
-- 补打卡 Day 9+ 的记录
-- 教材后续可继续扩展到 4/18
+## Next Steps（按时间顺序）
+
+### 今晚（4.27 Day 1，60-90min）
+- [ ] 准备 20min：读 README + Week 1 卡片，写启动仪式贴桌面，PAIN-POINTS 填 5 个
+- [ ] 心流 60-70min：Hot 100 #21 + #141，画思路图
+- [ ] 微复盘 5min：录音回答 3 个问题（启动仪式/心流/想不想继续）
+
+### 明天（4.28 Day 2）
+- [ ] 上午碎片：看 Jake Archibald「In The Loop」
+- [ ] 晚上心流 70min：#142 + #160 + 手写 instanceof + 整合图
+- [ ] 微复盘 5min + PAIN-POINTS 补到 10 个
+
+### 后天（4.29 Day 3 早上 10min）
+- [ ] 评估 v2 体验（5 个问题）
+- [ ] 决策：直接 push / 微调后 push / 撤回 v2
+- [ ] 继续 Week 1 剩余天
+
+## Active Plan References
+- 当周里程碑：见 `WEEKLY-PLAN.md` Week 1
+- 当日动作：见本文件 Next Steps
+- 复盘模板：见 `ASSESSMENT.md`
 
 ## Open Issues
-- 无
+- v2 在试跑阶段，4.29 早上做 push 决策
+- PAIN-POINTS.md 工作痛点池待填满 10 个（本周内）
+- 启动仪式 5 步具体内容待用户确定（4.27 晚上写好贴桌面）
+
+## How to Resume on Another Machine
+```
+1. cd ~/preview && ./sync.sh in
+2. 告诉 Claude：请先读 LEARNING-CONTEXT.md 和 handoff.md 恢复上下文
+3. Claude 应该在 60 秒内"变成"了解你的助手，可以直接继续
+4. 当前应该在做的事：见上面 Next Steps 里时间线最近的一个
+```
