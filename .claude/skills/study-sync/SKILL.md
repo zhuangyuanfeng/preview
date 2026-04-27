@@ -1,14 +1,14 @@
 ---
 name: study-sync
-description: 切机前同步——A 机要切走/中场休息/被打断时调用。把当前正在做的事写到 handoff.md，方便另一台电脑（或下次 session）用 /study-context 继承。⚠️ 这不是收工！不会累加 tracker、不会标记今日完成、不会触发倦怠预警。如果是当天真正结束，请改用 /study-wrap。触发关键词：要走了 / 切机 / 换电脑 / 我先离开一下 / 临时停一下 / sync / study-sync。
+description: 切机前一键同步——你调用后什么都不用管。Claude 自动检查上下文、更新 handoff.md、commit + push 到 GitHub。⚠️ 这不是收工！不会累加 tracker、不会触发倦怠预警。如果当天真正结束，请改用 /study-wrap。触发关键词：要走了 / 切机 / 换电脑 / 我先离开一下 / 临时停一下 / sync / study-sync。
 ---
 
-# 切机前同步（study-sync）
+# 切机前自动同步（study-sync）
 
 **核心语义**：临时离开当前电脑，但**不代表结束当天学习**。
-只是把"现在正在做什么"快照到 handoff.md，让另一台电脑能继承。
+用户调用此 skill 后**什么都不用做**——Claude 全自动完成同步。
 
-**关键差异**（不要混淆）：
+**关键差异**：
 
 | Skill | 是否结束当天 | 是否累加 tracker | 是否触发倦怠预警 |
 |---|---|---|---|
@@ -19,62 +19,83 @@ description: 切机前同步——A 机要切走/中场休息/被打断时调用
 
 ---
 
-## 步骤 1：问用户当前状态（如未明说）
+## 步骤 1：从 session 自动推断当前在做什么
 
-如果用户只说"我要切机"没说在做啥，**一题一问**确认：
+**先尝试推断**（不要立刻问用户）：
+扫描本次 session 用户做了什么实质工作（学习/编辑文件/讨论）。
+能推断出"刚才在做什么"就直接用，**不要再问**。
 
-- 你刚才在做什么？（写到 handoff.md → What I Was Doing）
-- 做到哪一步了？（写到 What I Was Doing 的细节里）
-- 有没有卡壳点要记一下？（如有，写到 Open Issues）
-- 接下来回来想继续做什么？（如和当前 Next Steps 不同，更新 Next Steps）
+**只有完全推断不出**时，才一题一问：
 
-如果用户已经主动说了，直接走步骤 2。
+> 切机前最后一次记录：你刚才主要在做什么？（一句话即可）
+
+⚠️ 用户记忆力受限，**不要堆问题**，最多问 1 次。
 
 ## 步骤 2：用 Edit 局部更新 ~/preview/handoff.md
 
-只改这几个字段，**其他保留**：
+只改这几个字段：
 
-- `Last Updated`: 今天日期 YYYY-MM-DD
-- `What I Was Doing`: 用现在进行时写「**正在做** XXX，做到 YYY 步」（注意：不是"完成了 XXX"）
-- `Next Steps`: 如果用户调整了接下来要做的事，相应更新；否则不动
-- `Open Issues`: 如果有新卡壳点，append；否则不动
+- `Last Updated`: 今天日期 YYYY-MM-DD（用 `date "+%Y-%m-%d"` 获取）
+- `What I Was Doing`: **现在进行时**「正在做 XXX，做到 YYY 步」（不是"完成了 XXX"）
+- `Next Steps`: 如果用户调整了，相应更新；否则保持不动
+- `Open Issues`: 如果有新卡壳点，append；否则保持不动
 
 ⚠️ **不要碰**：
-- `Current Progress` —— 这是当天结束才累加的
-- `tracker.json` —— 这是当天结束才更新的
+- `Current Progress` —— 这是 /study-wrap 才累加
+- `tracker.json` —— 这是 /study-wrap 才更新
 - `Current Phase` —— 阶段没变就不动
 
-## 步骤 3：给用户一份"切机卡"（≤ 6 行）
+## 步骤 3：自动 commit + push（无需用户介入）
 
-```
-🔄 切机准备就绪
+用 Bash 一气呵成执行：
 
-📌 已记录：
-- 正在做：[一句话]
-- 做到：[一步描述]
-- 卡壳：[如有]
-
-🚀 你来跑（同步到 GitHub）：
-   cd ~/preview && ./sync.sh out "切机：[简短]"
-
-到另一台电脑后：
-   cd ~/preview && ./sync.sh in
-   开 Claude 说：/study-context
+```bash
+cd ~/preview
+if git diff --quiet handoff.md; then
+  echo "handoff.md 无变化，跳过 commit"
+else
+  git add handoff.md
+  git commit -m "sync: <一句话简述，例如：Day 1 中场切机，正在写 #21 解法>"
+  git push origin master
+fi
 ```
 
-## 步骤 4：等用户跑 sync.sh out，**不要主动 git push**
+**commit message 由 Claude 基于步骤 1 推断自动生成**，格式 `sync: <简述>`。
 
-git push 涉及共享状态，让用户自己跑。
-如果用户回复"帮我跑"，再用 Bash 执行。
+### 如果失败（网络/冲突/凭据）
+
+- 立即报告错误原因
+- **不要自动重试**
+- 给用户清晰的手动恢复指引（例如：`git pull --rebase` 解冲突 / 检查网络 / 重新登录 GitHub）
+
+## 步骤 4：给用户简短确认（≤ 5 行）
+
+成功格式：
+
+```
+🔄 已同步并推送（commit <短 hash>）
+- 当前在做：[一句话，What I Was Doing]
+- 远程：origin/master ✅
+
+切到另一台 → cd ~/preview && claude → 说 /study-context，自动接上
+```
+
+失败格式：
+
+```
+❌ 同步失败：<错误原因>
+- 建议操作：<具体命令>
+- 修复后告诉我，我重试
+```
 
 ## ❌ 不要做的事
 
-- ❌ 不要更新 tracker.json（这是收工才做）
+- ❌ 不要让用户手动跑 ./sync.sh out 或 git 命令（你调用此 skill 已授权 Claude 自动 push）
+- ❌ 不要更新 tracker.json
 - ❌ 不要在 What I Was Doing 写"完成了 XX"——用现在进行时
-- ❌ 不要触发倦怠期预警（5.26-6.15 提醒只在 /study-wrap 做）
-- ❌ 不要写"今日复盘" / "微复盘 3 问"（这是收工动作）
-- ❌ 不要假设用户回到另一台机器后会立刻继续——可能间隔几小时
-- ❌ 不要主动 git push
+- ❌ 不要触发倦怠预警（5.26-6.15 提醒只在 /study-wrap）
+- ❌ 不要做"微复盘 3 问"（这是 /study-wrap 的职责）
+- ❌ 不要堆问题（最多一题一问，用户记忆力受限）
 
 ## 主动触发场景
 
@@ -87,13 +108,13 @@ git push 涉及共享状态，让用户自己跑。
 
 ## 何时反向建议改用其他 skill
 
-- 用户说"睡了" / "今天到此为止" / "学完了" → 建议 `/study-wrap`
-- 用户说"我刚回来" / "从另一台过来" → 建议 `/study-context`
-- 用户说"开始今天" → 建议 `/study-start`
+- "睡了" / "今天到此为止" / "学完了" → 建议 `/study-wrap`
+- "我刚回来" / "从另一台过来" → 建议 `/study-context`
+- "开始今天" → 建议 `/study-start`
 
 ## 周末/周日不特别处理
 
-本 skill 不区分周日，不要触发周复盘提醒——那是 `/study-wrap` 的职责。
+本 skill 不区分周日，不触发周复盘提醒——那是 `/study-wrap` 的职责。
 
 ## 文件位置
 
