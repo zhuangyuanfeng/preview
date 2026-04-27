@@ -7,9 +7,8 @@
 2026-04-27
 
 ## What I Was Doing
-完成 v2 计划重整（commit `3b35ee1`），基于学习风格测评重设节奏。
-新增 `LEARNING-CONTEXT.md` 作为跨机上下文恢复入口。
-今晚（4.27）开始 Week 1 试跑 Day 1。
+正在填写 PAIN-POINTS.md 痛点池，已填 7/10 个，剩余 3 个待补。
+Week 1 Day 1 的算法题（#21 + #141）还没开始。
 
 ## Current Phase
 - 阶段：**v2 / Week 1 试跑**
@@ -23,7 +22,7 @@
 - AI 项目：未开始（Week 4 启动）
 - 简历：v1 状态（Week 6 重做）
 - 学习风格画像：已测评并写入 memory（详见 LEARNING-CONTEXT.md）
-- 工作痛点池：未填（计划今晚先填 5 个）
+- 工作痛点池：**7/10**（已填 7 个，剩 3 个待补）
 
 ## Next Steps（按时间顺序）
 
