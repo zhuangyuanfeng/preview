@@ -1,9 +1,22 @@
 ---
 name: study-wrap
-description: 结束今天的学习。自动总结进度、更新 handoff.md 和 tracker.json、提示同步。在每天结束前调用，2-3 分钟内完成收工。触发关键词：今天结束 / 收工 / 今天就到这 / 准备睡了 / 明天再来 / wrap / study-wrap。
+description: 当天真正结束学习。自动总结进度、更新 handoff.md、累加 tracker.json、做微复盘、提示同步。⚠️ 这是「当天结束」，会累加学习日 + 触发倦怠预警。如果只是切机但没结束，请用 /study-sync。如果是新一天的开始，请用 /study-start。触发关键词：今天结束 / 收工 / 今天就到这 / 准备睡了 / 明天再来 / 学完了 / wrap / study-wrap。
 ---
 
 # 结束今天学习（study-wrap）
+
+**核心语义**：当天**真正结束**学习。会累加学习数据 + 做复盘。
+
+**与其他 skill 的边界**：
+
+| Skill | 用法 |
+|---|---|
+| `/study-wrap`（本 skill）| 当天真正结束，累加 tracker，做复盘 |
+| `/study-sync` | 切机但**没结束**，只是临时离开 |
+| `/study-context` | 中途从另一台电脑/几小时前继承上下文 |
+| `/study-start` | 新一天的开始仪式 |
+
+如果用户语境是"切机但没结束"（比如"我先去吃饭" / "换电脑"），**主动建议改用 `/study-sync`**。
 
 调用此 skill 在 2-3 分钟内完成今天的收工流程。
 
