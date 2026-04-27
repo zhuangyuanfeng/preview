@@ -1,52 +1,64 @@
 #!/bin/bash
-# 一次性安装：把 preview 项目里的 study-context skill 软链到全局
-# 新电脑/新机器首次使用前跑一次即可，后续随 git 同步自动更新。
+# 一次性安装：把 preview 项目里所有 skill 软链到全局 ~/.claude/skills/
+# 自动遍历 .claude/skills/ 下所有子目录，未来加新 skill 不需要改这个脚本。
+# 新电脑首次使用前跑一次即可，之后随 git 同步自动生效。
 
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SOURCE_DIR="$PROJECT_DIR/.claude/skills/study-context"
-TARGET_DIR="$HOME/.claude/skills/study-context"
+SOURCE_BASE="$PROJECT_DIR/.claude/skills"
+TARGET_BASE="$HOME/.claude/skills"
 
-echo "📦 安装 study-context skill"
-echo "   源：$SOURCE_DIR"
-echo "   目标：$TARGET_DIR"
+echo "📦 安装 preview 项目的 skills"
+echo "   源：$SOURCE_BASE"
+echo "   目标：$TARGET_BASE"
 echo ""
 
-# 1. 检查源是否存在
-if [ ! -d "$SOURCE_DIR" ]; then
-  echo "❌ skill 源目录不存在：$SOURCE_DIR"
+# 1. 检查源目录
+if [ ! -d "$SOURCE_BASE" ]; then
+  echo "❌ 项目里没有 .claude/skills 目录"
   echo "   请确认 preview 仓库已最新（git pull）"
   exit 1
 fi
 
 # 2. 准备全局 skills 目录
-mkdir -p "$HOME/.claude/skills"
+mkdir -p "$TARGET_BASE"
 
-# 3. 处理已有目标
-if [ -L "$TARGET_DIR" ]; then
-  echo "⚠️  已存在软链接，将重新创建"
-  rm "$TARGET_DIR"
-elif [ -e "$TARGET_DIR" ]; then
-  echo "❌ $TARGET_DIR 已存在且不是软链接（可能是真目录或文件）"
-  echo "   请手动检查并备份后再运行此脚本"
-  exit 1
-fi
+# 3. 遍历每个 skill 子目录
+installed=0
+skipped=0
+for skill_dir in "$SOURCE_BASE"/*/; do
+  [ -d "$skill_dir" ] || continue
 
-# 4. 创建软链
-ln -s "$SOURCE_DIR" "$TARGET_DIR"
+  skill_name=$(basename "$skill_dir")
+  source="$SOURCE_BASE/$skill_name"
+  target="$TARGET_BASE/$skill_name"
 
-# 5. 验证
-if [ -L "$TARGET_DIR" ] && [ -f "$TARGET_DIR/SKILL.md" ]; then
-  echo "✅ skill 'study-context' 已安装"
-  echo ""
-  echo "测试方法："
-  echo "  1. 在任意目录新开一个 Claude session"
-  echo "  2. 输入：/study-context"
-  echo "  3. 或自然说："恢复上下文" / "我回来了" / "接着学""
-  echo ""
-  echo "💡 之后 SKILL.md 内容若有更新，git pull 即生效，不需要再跑此脚本"
-else
-  echo "❌ 软链创建失败，请检查"
-  exit 1
-fi
+  if [ -L "$target" ]; then
+    rm "$target"
+  elif [ -e "$target" ]; then
+    echo "  ⚠️  跳过 $skill_name（$target 已存在且不是软链，请手动处理）"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+  ln -s "$source" "$target"
+  if [ -f "$target/SKILL.md" ]; then
+    echo "  ✅ $skill_name"
+    installed=$((installed + 1))
+  else
+    echo "  ❌ $skill_name 软链创建后找不到 SKILL.md"
+    rm "$target"
+  fi
+done
+
+echo ""
+echo "完成：已安装 $installed 个 skill$([ $skipped -gt 0 ] && echo "，跳过 $skipped 个")"
+echo ""
+echo "测试方法："
+echo "  1. 在任意目录新开一个 Claude session"
+echo "  2. 输入：/study-context（开始）或 /study-wrap（结束）"
+echo "  3. 或自然语言：'我回来了' / '收工'"
+echo ""
+echo "💡 之后 SKILL.md 内容若有更新，git pull 即生效，不需要再跑此脚本"
+echo "   只有新增/删除 skill 时才需要重跑"
