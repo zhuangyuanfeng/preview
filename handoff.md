@@ -4,11 +4,11 @@
 > 静态信息（画像、协作约定、v2 决策）放在 `LEARNING-CONTEXT.md`。
 
 ## Last Updated
-2026-04-27
+2026-04-28
 
 ## What I Was Doing
-正在填写 PAIN-POINTS.md 痛点池，已填 7/10 个，剩余 3 个待补。
-Week 1 Day 1 的算法题（#21 + #141）还没开始。
+痛点池 PAIN-POINTS.md 已填满 10/10。准备回家中。
+今晚 Day 1 的算法（#21 + #141）尚未开始，回家后或明天补上。
 
 ## Current Phase
 - 阶段：**v2 / Week 1 试跑**
@@ -22,7 +22,7 @@ Week 1 Day 1 的算法题（#21 + #141）还没开始。
 - AI 项目：未开始（Week 4 启动）
 - 简历：v1 状态（Week 6 重做）
 - 学习风格画像：已测评并写入 memory（详见 LEARNING-CONTEXT.md）
-- 工作痛点池：**7/10**（已填 7 个，剩 3 个待补）
+- 工作痛点池：**10/10** ✅（已填满，4 个 ⭐ 适配 Week 4-5）
 
 ## Next Steps（按时间顺序）
 
@@ -47,9 +47,9 @@ Week 1 Day 1 的算法题（#21 + #141）还没开始。
 - 复盘模板：见 `ASSESSMENT.md`
 
 ## Open Issues
-- v2 在试跑阶段，4.29 早上做 push 决策
-- PAIN-POINTS.md 工作痛点池待填满 10 个（本周内）
-- 启动仪式 5 步具体内容待用户确定（4.27 晚上写好贴桌面）
+- v2 已 push（commit 3070af8 + 后续），跑通跨机机制
+- Day 1 算法（#21 + #141）尚未开始，回家后或明天补
+- 启动仪式 5 步具体内容仍待用户确定（贴桌面）
 
 ## How to Resume on Another Machine
 ```
