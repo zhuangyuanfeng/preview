@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#21 合并两有序链表 - SVG 图解</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.7;
+    padding: 20px 16px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  h1 { color: #38bdf8; font-size: 22px; margin-bottom: 4px; }
+  h2 { color: #7dd3fc; font-size: 16px; margin: 24px 0 10px; border-left: 3px solid #38bdf8; padding-left: 10px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 18px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    background: #1e293b; padding: 10px 14px; border-radius: 8px;
+    margin-bottom: 16px; font-size: 13px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; }
+
+  .step {
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 14px 0;
+    border-left: 3px solid #475569;
+  }
+  .step.active { border-left-color: #38bdf8; }
+  .step-title {
+    font-weight: 600; color: #e2e8f0; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .step-num {
+    background: #38bdf8; color: #0f172a; font-size: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; font-weight: 700;
+  }
+  .step-desc { color: #94a3b8; font-size: 14px; margin-bottom: 10px; }
+  svg { display: block; width: 100%; max-width: 720px; height: auto; }
+
+  .core {
+    background: #1e293b; border: 1px solid #334155;
+    padding: 14px 16px; border-radius: 10px;
+    margin: 14px 0;
+  }
+  .core p { margin: 6px 0; }
+  .core code {
+    background: #0f172a; padding: 2px 6px; border-radius: 4px;
+    color: #fbbf24; font-family: ui-monospace, monospace; font-size: 13px;
+  }
+
+  .pitfalls { margin-top: 24px; }
+  .pitfall {
+    background: #1e293b; border-left: 3px solid #f87171;
+    padding: 10px 14px; margin: 8px 0; border-radius: 0 8px 8px 0;
+  }
+  .pitfall strong { color: #fca5a5; }
+  .pitfall p { color: #cbd5e1; font-size: 14px; margin-top: 4px; }
+
+  .footer {
+    margin-top: 32px; padding-top: 16px;
+    border-top: 1px solid #334155;
+    color: #64748b; font-size: 12px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>#21 合并两个有序链表</h1>
+<p class="subtitle">输入：l1 = 1→2→4，l2 = 1→3→4　|　输出：1→1→2→3→4→4</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="swatch" style="background:#475569"></div>dummy（哨兵）</div>
+  <div class="legend-item"><div class="swatch" style="background:#3b82f6"></div>l1（待处理）</div>
+  <div class="legend-item"><div class="swatch" style="background:#10b981"></div>l2（待处理）</div>
+  <div class="legend-item"><div class="swatch" style="background:#f59e0b"></div>已接到结果</div>
+  <div class="legend-item"><div class="swatch" style="background:#ef4444; border-radius:50%; width:10px; height:10px;"></div>cur 指针</div>
+</div>
+
+<div class="core">
+  <p>🎯 <strong>核心思想</strong>：双指针走两条链表，<strong>谁小谁先接</strong>到 cur 后面，cur 跟着走。</p>
+  <p>🛡 <strong>哨兵 dummy</strong>：避开"空头"特判，最后 <code>return dummy.next</code> 即可。</p>
+</div>
+
+<!-- ======================== STEP 0 ======================== -->
+<div class="step">
+  <div class="step-title"><span class="step-num">0</span>初始状态</div>
+  <div class="step-desc">建一个 dummy 节点，cur 指向 dummy。</div>
+  <svg viewBox="0 0 720 200">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+      </marker>
+      <marker id="curArrow" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M 0 0 L 5 10 L 10 0 z" fill="#ef4444"/>
+      </marker>
+    </defs>
+
+    <!-- l1 row -->
+    <text x="0" y="34" fill="#94a3b8" font-size="13">l1:</text>
+    <g transform="translate(40,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="92" y1="33" x2="116" y2="33" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(120,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">2</text>
+    </g>
+    <line x1="172" y1="33" x2="196" y2="33" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(200,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <!-- l2 row -->
+    <text x="0" y="94" fill="#94a3b8" font-size="13">l2:</text>
+    <g transform="translate(40,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="92" y1="93" x2="116" y2="93" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(120,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">3</text>
+    </g>
+    <line x1="172" y1="93" x2="196" y2="93" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(200,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <!-- result row -->
+    <text x="0" y="174" fill="#94a3b8" font-size="13">res:</text>
+    <g transform="translate(40,155)">
+      <rect width="60" height="36" rx="6" fill="#475569"/><text x="30" y="24" text-anchor="middle" fill="white" font-size="13">dummy</text>
+    </g>
+    <!-- cur 指针 -->
+    <line x1="70" y1="195" x2="70" y2="200" stroke="#ef4444" stroke-width="2" marker-end="url(#curArrow)"/>
+    <text x="70" y="200" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700" dy="-3"></text>
+    <text x="105" y="180" fill="#ef4444" font-size="12" font-weight="700">← cur</text>
+  </svg>
+</div>
+
+<!-- ======================== STEP 1 ======================== -->
+<div class="step active">
+  <div class="step-title"><span class="step-num">1</span>比较 l1.val=1 vs l2.val=1，1 ≤ 1 → 接 l1</div>
+  <div class="step-desc"><code>cur.next = l1</code>；<code>l1 = l1.next</code>；<code>cur = cur.next</code></div>
+  <svg viewBox="0 0 720 200">
+    <text x="0" y="34" fill="#94a3b8" font-size="13">l1:</text>
+    <text x="40" y="38" fill="#475569" font-size="11" text-decoration="line-through">1</text>
+    <g transform="translate(80,15)" opacity="1">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">2</text>
+    </g>
+    <line x1="132" y1="33" x2="156" y2="33" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(160,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="94" fill="#94a3b8" font-size="13">l2:</text>
+    <g transform="translate(40,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="92" y1="93" x2="116" y2="93" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(120,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">3</text>
+    </g>
+    <line x1="172" y1="93" x2="196" y2="93" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(200,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="174" fill="#94a3b8" font-size="13">res:</text>
+    <g transform="translate(40,155)">
+      <rect width="60" height="36" rx="6" fill="#475569"/><text x="30" y="24" text-anchor="middle" fill="white" font-size="13">dummy</text>
+    </g>
+    <line x1="104" y1="173" x2="128" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(132,155)">
+      <rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="156" y1="195" x2="156" y2="200" stroke="#ef4444" stroke-width="2" marker-end="url(#curArrow)"/>
+    <text x="195" y="180" fill="#ef4444" font-size="12" font-weight="700">← cur</text>
+  </svg>
+</div>
+
+<!-- ======================== STEP 2 ======================== -->
+<div class="step active">
+  <div class="step-title"><span class="step-num">2</span>l1.val=2 vs l2.val=1，1 &lt; 2 → 接 l2</div>
+  <div class="step-desc">cur 接 l2 节点 1，l2 走到 3，cur 走到新节点</div>
+  <svg viewBox="0 0 720 200">
+    <text x="0" y="34" fill="#94a3b8" font-size="13">l1:</text>
+    <g transform="translate(40,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">2</text>
+    </g>
+    <line x1="92" y1="33" x2="116" y2="33" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(120,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="94" fill="#94a3b8" font-size="13">l2:</text>
+    <text x="40" y="98" fill="#475569" font-size="11" text-decoration="line-through">1</text>
+    <g transform="translate(80,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">3</text>
+    </g>
+    <line x1="132" y1="93" x2="156" y2="93" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(160,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="174" fill="#94a3b8" font-size="13">res:</text>
+    <g transform="translate(40,155)">
+      <rect width="60" height="36" rx="6" fill="#475569"/><text x="30" y="24" text-anchor="middle" fill="white" font-size="13">dummy</text>
+    </g>
+    <line x1="104" y1="173" x2="128" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(132,155)">
+      <rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="184" y1="173" x2="208" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(212,155)">
+      <rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="236" y1="195" x2="236" y2="200" stroke="#ef4444" stroke-width="2" marker-end="url(#curArrow)"/>
+    <text x="275" y="180" fill="#ef4444" font-size="12" font-weight="700">← cur</text>
+  </svg>
+</div>
+
+<!-- ======================== STEP 3 ======================== -->
+<div class="step active">
+  <div class="step-title"><span class="step-num">3</span>l1.val=2 vs l2.val=3，2 &lt; 3 → 接 l1</div>
+  <svg viewBox="0 0 720 200">
+    <text x="0" y="34" fill="#94a3b8" font-size="13">l1:</text>
+    <text x="40" y="38" fill="#475569" font-size="11" text-decoration="line-through">2</text>
+    <g transform="translate(80,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="94" fill="#94a3b8" font-size="13">l2:</text>
+    <g transform="translate(40,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">3</text>
+    </g>
+    <line x1="92" y1="93" x2="116" y2="93" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(120,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="174" fill="#94a3b8" font-size="13">res:</text>
+    <g transform="translate(40,155)">
+      <rect width="60" height="36" rx="6" fill="#475569"/><text x="30" y="24" text-anchor="middle" fill="white" font-size="13">dummy</text>
+    </g>
+    <line x1="104" y1="173" x2="128" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(132,155)">
+      <rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="184" y1="173" x2="208" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(212,155)">
+      <rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text>
+    </g>
+    <line x1="264" y1="173" x2="288" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(292,155)">
+      <rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">2</text>
+    </g>
+    <line x1="316" y1="195" x2="316" y2="200" stroke="#ef4444" stroke-width="2" marker-end="url(#curArrow)"/>
+    <text x="355" y="180" fill="#ef4444" font-size="12" font-weight="700">← cur</text>
+  </svg>
+</div>
+
+<!-- ======================== STEP 4 ======================== -->
+<div class="step active">
+  <div class="step-title"><span class="step-num">4</span>l1.val=4 vs l2.val=3，3 &lt; 4 → 接 l2</div>
+  <svg viewBox="0 0 720 200">
+    <text x="0" y="34" fill="#94a3b8" font-size="13">l1:</text>
+    <g transform="translate(40,15)">
+      <rect width="48" height="36" rx="6" fill="#3b82f6"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="94" fill="#94a3b8" font-size="13">l2:</text>
+    <text x="40" y="98" fill="#475569" font-size="11" text-decoration="line-through">3</text>
+    <g transform="translate(80,75)">
+      <rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text>
+    </g>
+
+    <text x="0" y="174" fill="#94a3b8" font-size="13">res:</text>
+    <g transform="translate(40,155)"><rect width="60" height="36" rx="6" fill="#475569"/><text x="30" y="24" text-anchor="middle" fill="white" font-size="13">dummy</text></g>
+    <line x1="104" y1="173" x2="128" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(132,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text></g>
+    <line x1="184" y1="173" x2="208" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(212,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text></g>
+    <line x1="264" y1="173" x2="288" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(292,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">2</text></g>
+    <line x1="344" y1="173" x2="368" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(372,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">3</text></g>
+    <line x1="396" y1="195" x2="396" y2="200" stroke="#ef4444" stroke-width="2" marker-end="url(#curArrow)"/>
+    <text x="435" y="180" fill="#ef4444" font-size="12" font-weight="700">← cur</text>
+  </svg>
+</div>
+
+<!-- ======================== STEP 5 ======================== -->
+<div class="step active">
+  <div class="step-title"><span class="step-num">5</span>l1.val=4 vs l2.val=4，4 ≤ 4 → 接 l1</div>
+  <svg viewBox="0 0 720 200">
+    <text x="0" y="34" fill="#94a3b8" font-size="13">l1:</text>
+    <text x="40" y="38" fill="#475569" font-size="11" text-decoration="line-through">4</text>
+    <text x="80" y="38" fill="#64748b" font-size="13" font-style="italic">null</text>
+
+    <text x="0" y="94" fill="#94a3b8" font-size="13">l2:</text>
+    <g transform="translate(40,75)"><rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text></g>
+
+    <text x="0" y="174" fill="#94a3b8" font-size="13">res:</text>
+    <g transform="translate(40,155)"><rect width="60" height="36" rx="6" fill="#475569"/><text x="30" y="24" text-anchor="middle" fill="white" font-size="13">dummy</text></g>
+    <line x1="104" y1="173" x2="128" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(132,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text></g>
+    <line x1="184" y1="173" x2="208" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(212,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text></g>
+    <line x1="264" y1="173" x2="288" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(292,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">2</text></g>
+    <line x1="344" y1="173" x2="368" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(372,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">3</text></g>
+    <line x1="424" y1="173" x2="448" y2="173" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(452,155)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text></g>
+    <line x1="476" y1="195" x2="476" y2="200" stroke="#ef4444" stroke-width="2" marker-end="url(#curArrow)"/>
+    <text x="515" y="180" fill="#ef4444" font-size="12" font-weight="700">← cur</text>
+  </svg>
+</div>
+
+<!-- ======================== STEP 6 ======================== -->
+<div class="step active">
+  <div class="step-title"><span class="step-num">6</span>l1 = null，循环结束。剩余 l2 直接接到 cur 后面</div>
+  <div class="step-desc"><code>cur.next = l1 || l2</code>　不需要 while 逐个接，链表本身是连着的。最后 <code>return dummy.next</code></div>
+  <svg viewBox="0 0 720 100">
+    <text x="0" y="64" fill="#94a3b8" font-size="13">res:</text>
+    <g transform="translate(40,45)"><rect width="60" height="36" rx="6" fill="#475569"/><text x="30" y="24" text-anchor="middle" fill="white" font-size="13">dummy</text></g>
+    <line x1="104" y1="63" x2="128" y2="63" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(132,45)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text></g>
+    <line x1="184" y1="63" x2="208" y2="63" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(212,45)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">1</text></g>
+    <line x1="264" y1="63" x2="288" y2="63" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(292,45)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">2</text></g>
+    <line x1="344" y1="63" x2="368" y2="63" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(372,45)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">3</text></g>
+    <line x1="424" y1="63" x2="448" y2="63" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+    <g transform="translate(452,45)"><rect width="48" height="36" rx="6" fill="#f59e0b"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text></g>
+    <line x1="504" y1="63" x2="528" y2="63" stroke="#10b981" stroke-width="2" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
+    <g transform="translate(532,45)"><rect width="48" height="36" rx="6" fill="#10b981"/><text x="24" y="24" text-anchor="middle" fill="white" font-weight="600">4</text></g>
+    <text x="595" y="68" fill="#10b981" font-size="12" font-weight="700">← l2 整段</text>
+    <text x="40" y="20" fill="#22c55e" font-size="13" font-weight="600">✓ 返回 dummy.next = 1→1→2→3→4→4</text>
+  </svg>
+</div>
+
+<!-- ======================== 5 步骨架 ======================== -->
+<h2>🧱 5 步骨架（伪代码）</h2>
+<div class="core">
+  <p><strong>1.</strong> 建 <code>dummy</code> 节点 + <code>cur</code> 指针指向 dummy</p>
+  <p><strong>2.</strong> while (l1 &amp;&amp; l2)：比较 val，<code>cur.next = </code>较小的那个，被接走的指针往后走，<code>cur</code> 也往后走</p>
+  <p><strong>3.</strong> 循环出来后，至少一个空 → <code>cur.next = l1 || l2</code>（剩下整段一起接）</p>
+  <p><strong>4.</strong> <code>return dummy.next</code></p>
+</div>
+
+<!-- ======================== 4 个坑 ======================== -->
+<h2>⚠️ 4 个常见坑</h2>
+<div class="pitfalls">
+  <div class="pitfall">
+    <strong>坑 1：忘了 cur = cur.next</strong>
+    <p>cur 原地不动，下一轮 cur.next 又被赋值，链表自我覆盖。比较 + 接节点后必须移 cur。</p>
+  </div>
+  <div class="pitfall">
+    <strong>坑 2：返回 dummy 而非 dummy.next</strong>
+    <p>答案多个 0 头节点。永远 <code>return dummy.next</code>。</p>
+  </div>
+  <div class="pitfall">
+    <strong>坑 3：while 写成 ||</strong>
+    <p>当一个为 null 时 .val 报错。while 必须 <code>&amp;&amp;</code>，循环外才接剩余。</p>
+  </div>
+  <div class="pitfall">
+    <strong>坑 4：剩余链表用 while 逐个接</strong>
+    <p>多写一遍循环，浪费。直接 <code>cur.next = l1 || l2</code>，链表本身后面是连着的。</p>
+  </div>
+</div>
+
+<div class="footer">
+  Hot 100 #21 · v2 学习辅助资料 · 看完图自己写代码
+</div>
+
+</body>
+</html>
