@@ -74,14 +74,25 @@
         "2": { "done": true, "note": "节流：API用错 new Date().now() 应为 Date.now() 或 new Date().getTime()" }
       },
       "weakness": ["闭包模型", "递归边界判断", "高阶函数 return function 思维"]
+    },
+    "2026-05-18": {
+      "day": "Day 9",
+      "done": true,
+      "time": "01:00",
+      "tasks": {
+        "0": { "done": true, "note": "#141 环形链表盲写，快慢指针。易错点：用 slow.value == fast.value 应为 slow === fast（比引用不比值）" },
+        "1": { "done": true, "note": "事件循环 3 道综合题全对（含 async/await + 宏任务嵌套微任务）" },
+        "2": { "done": true, "note": "建立 notes/ 笔记系统（event-loop.md + linked-list.md），记录口诀和易错点" }
+      },
+      "weakness": ["链表比较用 === 不用 =="]
     }
   },
   "stats": {
     "startDate": "2026-03-20",
-    "totalStudyDays": 8,
-    "currentStreak": 8,
+    "totalStudyDays": 9,
+    "currentStreak": 1,
     "maxStreak": 8,
-    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438"],
+    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438", "21", "141"],
     "jsHandwrite": ["promise", "deepClone-buggy", "debounce-typo", "throttle-api-err"],
     "weeklyAssessments": []
   }
