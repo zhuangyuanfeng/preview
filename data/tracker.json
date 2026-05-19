@@ -85,15 +85,27 @@
         "2": { "done": true, "note": "建立 notes/ 笔记系统（event-loop.md + linked-list.md），记录口诀和易错点" }
       },
       "weakness": ["链表比较用 === 不用 =="]
+    },
+    "2026-05-20": {
+      "day": "Day 10",
+      "done": true,
+      "time": "01:00",
+      "tasks": {
+        "0": { "done": true, "note": "复 #141 快慢指针，盲写基本正确（while条件优化：先比再走）" },
+        "1": { "done": true, "note": "#142 环形链表 II，理解+盲写通过。关键：相遇后 slow 回 head，同速走再遇=入口。易错：必须先比再走防死循环" },
+        "2": { "done": true, "note": "手写 instanceof 递归版，一次写对。改进：== → ===，__proto__ → Object.getPrototypeOf" },
+        "3": { "done": true, "note": "手写数组扁平化，递归版。漏了 return + for...of 需声明 const" }
+      },
+      "weakness": ["== vs === 反复出现", "函数忘 return"]
     }
   },
   "stats": {
     "startDate": "2026-03-20",
-    "totalStudyDays": 9,
-    "currentStreak": 1,
+    "totalStudyDays": 10,
+    "currentStreak": 2,
     "maxStreak": 8,
-    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438", "21", "141"],
-    "jsHandwrite": ["promise", "deepClone-buggy", "debounce-typo", "throttle-api-err"],
+    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438", "21", "141", "142"],
+    "jsHandwrite": ["promise", "deepClone-buggy", "debounce-typo", "throttle-api-err", "instanceof", "flatten"],
     "weeklyAssessments": []
   }
 }

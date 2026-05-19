@@ -65,3 +65,27 @@ function hasCycle(head) {
   return false
 }
 ```
+
+### 环形链表 II — 找入口（#142）
+```javascript
+function detectCycle(head) {
+  let slow = head
+  let fast = head
+  while (fast && fast.next) {
+    slow = slow.next
+    fast = fast.next.next
+    if (slow === fast) {
+      slow = head              // 拉回起点
+      while (slow !== fast) {  // 先比再走！不然可能死循环
+        slow = slow.next
+        fast = fast.next       // 同速走
+      }
+      return slow              // 再次相遇 = 入口
+    }
+  }
+  return null
+}
+```
+口诀：**快慢相遇后，一个回头一个留，同速走再遇就是入口**
+
+易错点：第 2 步必须**先比再走**，否则入口刚好在 head 时死循环

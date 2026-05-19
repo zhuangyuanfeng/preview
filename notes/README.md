@@ -6,4 +6,5 @@
 ## 目录
 
 - [事件循环](./event-loop.md) — 口诀 + 易错点
-- [链表](./linked-list.md) — 口诀 + 易错点
+- [链表](./linked-list.md) — 口诀 + 易错点 + #21 #141 #142 模板
+- [JS 手写题](./js-handwrite.md) — instanceof + 数组扁平化
