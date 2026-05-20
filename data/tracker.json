@@ -97,14 +97,23 @@
         "3": { "done": true, "note": "手写数组扁平化，递归版。漏了 return + for...of 需声明 const" }
       },
       "weakness": ["== vs === 反复出现", "函数忘 return"]
+    },
+    "2026-05-21": {
+      "day": "Day 11",
+      "done": true,
+      "time": "00:45",
+      "tasks": {
+        "0": { "done": true, "note": "#19 删除链表倒数第 N 个节点。理解+盲写通过。易错：1.必须用 dummy 2.删除一行 slow.next=slow.next.next 不需要 if/else 3.slow.next 是要删的节点不是越过了" }
+      },
+      "weakness": ["链表删除时多余的 if/else 判断"]
     }
   },
   "stats": {
     "startDate": "2026-03-20",
-    "totalStudyDays": 10,
-    "currentStreak": 2,
+    "totalStudyDays": 11,
+    "currentStreak": 3,
     "maxStreak": 8,
-    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438", "21", "141", "142"],
+    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438", "21", "141", "142", "19"],
     "jsHandwrite": ["promise", "deepClone-buggy", "debounce-typo", "throttle-api-err", "instanceof", "flatten"],
     "weeklyAssessments": []
   }

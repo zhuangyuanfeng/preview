@@ -89,3 +89,28 @@ function detectCycle(head) {
 口诀：**快慢相遇后，一个回头一个留，同速走再遇就是入口**
 
 易错点：第 2 步必须**先比再走**，否则入口刚好在 head 时死循环
+
+### 删除链表倒数第 N 个节点（#19）
+```javascript
+function removeNthFromEnd(head, n) {
+  const dummy = new ListNode(0)
+  dummy.next = head
+  let slow = dummy
+  let fast = dummy
+  for (let i = 0; i < n; i++) {
+    fast = fast.next
+  }
+  while (fast && fast.next) {
+    slow = slow.next
+    fast = fast.next
+  }
+  slow.next = slow.next.next   // 一行删除，不需要 if/else
+  return dummy.next
+}
+```
+口诀：**fast 先走 n 步，然后同速走，fast 到尾时 slow 在目标前一个**
+
+易错点：
+- 必须用 dummy，否则删头节点出错
+- 删除就是 `slow.next = slow.next.next`，一行搞定，null 也没问题
+- `slow.next` 是要删的节点本身，不是"越过了"
