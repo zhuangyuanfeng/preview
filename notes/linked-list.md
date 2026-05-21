@@ -114,3 +114,21 @@ function removeNthFromEnd(head, n) {
 - 必须用 dummy，否则删头节点出错
 - 删除就是 `slow.next = slow.next.next`，一行搞定，null 也没问题
 - `slow.next` 是要删的节点本身，不是"越过了"
+
+### 相交链表（#160）
+```javascript
+function getIntersectionNode(headA, headB) {
+  let a = headA
+  let b = headB
+  while (a !== b) {
+    a = a ? a.next : headB
+    b = b ? b.next : headA
+  }
+  return a
+}
+```
+口诀：**A 走完跳 B，B 走完跳 A，走相同总距离必在交点相遇**
+
+易错点：
+- 不要真拼链表（会破坏原始数据+可能死循环），逻辑切换就行
+- `a = a ? a.next : headB` 不是 `a = a.next || headB`（a 是 null 时 a.next 报错）

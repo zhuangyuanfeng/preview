@@ -106,14 +106,25 @@
         "0": { "done": true, "note": "#19 删除链表倒数第 N 个节点。理解+盲写通过。易错：1.必须用 dummy 2.删除一行 slow.next=slow.next.next 不需要 if/else 3.slow.next 是要删的节点不是越过了" }
       },
       "weakness": ["链表删除时多余的 if/else 判断"]
+    },
+    "2026-05-22": {
+      "day": "Day 12",
+      "done": true,
+      "time": "01:00",
+      "tasks": {
+        "0": { "done": true, "note": "#160 相交链表。想法对（A接B/B接A）但错误地真拼链表，改为逻辑切换 a = a ? a.next : headB。易错：三元运算符少冒号" },
+        "1": { "done": true, "note": "#20 有效括号。用 map + 栈，一次写对。易错：obj(item) 应为 obj[item]，list.len 应为 list.length" },
+        "2": { "done": true, "note": "#155 最小栈。辅助栈同步记录当前最小值。易错：1.单变量 min 不行（pop 后无法回退）2.辅助栈和主栈一一对应永远同步弹 3.第一次 push 辅助栈空要特判" }
+      },
+      "weakness": ["属性名拼写（len→length）", "对象取值 obj[] 不是 obj()", "三元运算符语法"]
     }
   },
   "stats": {
     "startDate": "2026-03-20",
-    "totalStudyDays": 11,
-    "currentStreak": 3,
+    "totalStudyDays": 12,
+    "currentStreak": 4,
     "maxStreak": 8,
-    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438", "21", "141", "142", "19"],
+    "algoCompleted": ["1", "49", "128", "283", "11", "3", "438", "21", "141", "142", "19", "160", "20", "155"],
     "jsHandwrite": ["promise", "deepClone-buggy", "debounce-typo", "throttle-api-err", "instanceof", "flatten"],
     "weeklyAssessments": []
   }
